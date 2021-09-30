@@ -17,7 +17,7 @@ namespace DerpySimulation.World
             // Generate heights
 
             peak = new Vector3(0, float.NegativeInfinity, 0);
-            var grid = new TerrainGeneratorData[size + 1, size + 1];
+            float[,] gridHeights = new float[size + 1, size + 1];
             for (int z = 0; z < size + 1; z++)
             {
                 for (int x = 0; x < size + 1; x++)
@@ -27,7 +27,7 @@ namespace DerpySimulation.World
                     {
                         peak = new Vector3(x, y, z);
                     }
-                    grid[z, x].Height = y;
+                    gridHeights[z, x] = y;
                 }
             }
 
@@ -35,16 +35,16 @@ namespace DerpySimulation.World
 #if DEBUG
             Log.WriteLineWithTime("Generating colors...");
 #endif
-            ColorGenerator.GenerateColors(colors, grid);
+            Vector3[,] gridColors = ColorGenerator.GenerateColors(colors, gridHeights);
 
             // Create terrain
 #if DEBUG
             Log.WriteLineWithTime("Generating terrain...");
 #endif
             uint vertexCount = CalcVertexCount(size + 1);
-            TerrainVBOData[] terrainData = CreateMeshData(grid, vertexCount);
+            TerrainVBOData[] terrainData = CreateMeshData(gridHeights, gridColors, vertexCount);
             uint[] indices = IndexGenerator.GenerateIndexBuffer(size + 1);
-            return new Terrain(Model.CreateTerrainModel(gl, terrainData, indices));
+            return new Terrain(Model.CreateTerrainModel(gl, terrainData, indices), gridHeights);
         }
 
         private static uint CalcVertexCount(uint vertexLength)
@@ -56,18 +56,18 @@ namespace DerpySimulation.World
         }
 
         /// <summary>Creates the vbo vertex data for the GPU.</summary>
-        private static TerrainVBOData[] CreateMeshData(TerrainGeneratorData[,] grid, uint vertexCount)
+        private static TerrainVBOData[] CreateMeshData(float[,] gridHeights, Vector3[,] gridColors, uint vertexCount)
         {
             var data = new TerrainVBOData[vertexCount];
             int dataIdx = 0;
-            var lastRow = new GridDataBuilder[grid.GetLength(0) - 1];
-            for (int row = 0; row < grid.GetLength(0) - 1; row++)
+            var lastRow = new GridDataBuilder[gridHeights.GetLength(0) - 1];
+            for (int row = 0; row < gridHeights.GetLength(0) - 1; row++)
             {
-                for (int col = 0; col < grid.GetLength(1) - 1; col++)
+                for (int col = 0; col < gridHeights.GetLength(1) - 1; col++)
                 {
-                    var builder = new GridDataBuilder(row, col, grid);
+                    var builder = new GridDataBuilder(row, col, gridHeights, gridColors);
                     builder.StoreSquareData(data, ref dataIdx);
-                    if (row == grid.GetLength(0) - 2)
+                    if (row == gridHeights.GetLength(0) - 2)
                     {
                         lastRow[col] = builder;
                     }

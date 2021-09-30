@@ -7,15 +7,17 @@ namespace DerpySimulation.World
     internal static class ColorGenerator
     {
         /// <summary>Calculates the color for every vertex of the terrain by linearly interpolating between the colors depending on the vertex's height.</summary>
-        public static void GenerateColors(ColorStep[] colors, TerrainGeneratorData[,] grid)
+        public static Vector3[,] GenerateColors(ColorStep[] colors, float[,] gridHeights)
         {
-            for (int z = 0; z < grid.GetLength(0); z++)
+            var gridColors = new Vector3[gridHeights.GetLength(0), gridHeights.GetLength(1)];
+            for (int z = 0; z < gridHeights.GetLength(0); z++)
             {
-                for (int x = 0; x < grid.GetLength(1); x++)
+                for (int x = 0; x < gridHeights.GetLength(1); x++)
                 {
-                    grid[z, x].Color = CalcColor(colors, grid[z, x].Height);
+                    gridColors[z, x] = CalcColor(colors, gridHeights[z, x]);
                 }
             }
+            return gridColors;
         }
 
         /// <summary>Determines the color of the vertex based on the provided height.</summary>

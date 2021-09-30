@@ -13,11 +13,11 @@ namespace DerpySimulation.World
         private readonly Vector3 _normalLeft;
         private readonly Vector3 _normalRight;
 
-        public GridDataBuilder(int row, int col, TerrainGeneratorData[,] grid)
+        public GridDataBuilder(int row, int col, float[,] gridHeights, Vector3[,] gridColors)
         {
-            _positions = CalcCornerPositions(col, row, grid);
-            _colors = CalcCornerColors(col, row, grid);
-            _lastIndex = grid.GetLength(0) - 2;
+            _positions = CalcCornerPositions(col, row, gridHeights);
+            _colors = CalcCornerColors(col, row, gridColors);
+            _lastIndex = gridHeights.GetLength(0) - 2;
             _row = row;
             _col = col;
             bool rightHanded = col % 2 != row % 2;
@@ -25,22 +25,22 @@ namespace DerpySimulation.World
             _normalRight = Utils.CalcNormal(_positions[2], _positions[rightHanded ? 0 : 1], _positions[3]);
         }
 
-        private static Vector3[] CalcCornerColors(int col, int row, TerrainGeneratorData[,] grid)
+        private static Vector3[] CalcCornerColors(int col, int row, Vector3[,] gridColors)
         {
             var cornerCols = new Vector3[4];
-            cornerCols[0] = grid[row, col].Color;
-            cornerCols[1] = grid[row + 1, col].Color;
-            cornerCols[2] = grid[row, col + 1].Color;
-            cornerCols[3] = grid[row + 1, col + 1].Color;
+            cornerCols[0] = gridColors[row, col];
+            cornerCols[1] = gridColors[row + 1, col];
+            cornerCols[2] = gridColors[row, col + 1];
+            cornerCols[3] = gridColors[row + 1, col + 1];
             return cornerCols;
         }
-        private static Vector3[] CalcCornerPositions(int col, int row, TerrainGeneratorData[,] grid)
+        private static Vector3[] CalcCornerPositions(int col, int row, float[,] gridHeights)
         {
             var vertices = new Vector3[4];
-            vertices[0] = new Vector3(col, grid[row, col].Height, row);
-            vertices[1] = new Vector3(col, grid[row + 1, col].Height, row + 1);
-            vertices[2] = new Vector3(col + 1, grid[row, col + 1].Height, row);
-            vertices[3] = new Vector3(col + 1, grid[row + 1, col + 1].Height, row + 1);
+            vertices[0] = new Vector3(col, gridHeights[row, col], row);
+            vertices[1] = new Vector3(col, gridHeights[row + 1, col], row + 1);
+            vertices[2] = new Vector3(col + 1, gridHeights[row, col + 1], row);
+            vertices[3] = new Vector3(col + 1, gridHeights[row + 1, col + 1], row + 1);
             return vertices;
         }
 

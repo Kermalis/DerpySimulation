@@ -9,10 +9,12 @@ namespace DerpySimulation.World
         public const uint SIZE = 2000;
 
         public Model Model { get; }
+        private readonly float[,] _heights;
 
-        public Terrain(Model m)
+        public Terrain(Model m, float[,] heights)
         {
             Model = m;
+            _heights = heights;
         }
 
         public void Render(GL gl)
