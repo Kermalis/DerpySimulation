@@ -21,7 +21,7 @@
 	</PropertyGroup>
 
 	<!--Debug defines-->
-	<!--DEBUG_WIREFRAME;DEBUG_TEST_SUN-->
+	<!--DEBUG_WIREFRAME;DEBUG_TEST_SUN;DEBUG_CAM_GRAVITY-->
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
 		<DefineConstants>$(DefineConstants)</DefineConstants>
 	</PropertyGroup>

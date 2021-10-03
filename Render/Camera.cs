@@ -5,8 +5,9 @@ namespace DerpySimulation.Render
 {
     internal sealed class Camera
     {
-        private const float FOV = 90f;
-        private const float RENDER_DISTANCE = 1500f;
+        private const float FOV = 70f;
+        public const float NEAR_PLANE = 0.1f;
+        public const float RENDER_DISTANCE = 1500f;
 
         public Matrix4x4 Projection;
         public PositionRotation PR;
@@ -14,14 +15,13 @@ namespace DerpySimulation.Render
         public Camera(in PositionRotation pr)
         {
             PR = pr;
-            ProgramMain.GetWindowSize(out uint w, out uint h);
-            UpdateProjection(w, h);
+            UpdateProjection(ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
             ProgramMain.Resized += UpdateProjection;
         }
 
         private void UpdateProjection(uint w, uint h)
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(Utils.DegreesToRadiansF(FOV), (float)w / h, 0.1f, RENDER_DISTANCE);
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(Utils.DegreesToRadiansF(FOV), (float)w / h, NEAR_PLANE, RENDER_DISTANCE);
         }
 
         public Matrix4x4 CreateViewMatrix()

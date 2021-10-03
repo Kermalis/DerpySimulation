@@ -2,52 +2,47 @@
 using DerpySimulation.Debug;
 #endif
 #if DEBUG_TEST_SUN
+using DerpySimulation.Core;
 using System;
 #endif
-using DerpySimulation.Core;
 using DerpySimulation.Render;
 using Silk.NET.OpenGL;
 using System.Numerics;
+using DerpySimulation.World.Terrain;
+using DerpySimulation.World.Water;
 
 namespace DerpySimulation.World
 {
     internal sealed class Simulation
     {
-        private readonly TerrainShader _terrainShader;
+        private readonly SimulationRenderer _renderer;
 
         private readonly Camera _camera;
-        private readonly Terrain _terrain;
+        private readonly TerrainTile _terrain;
+        private readonly WaterTile _water;
 
 #if DEBUG_TEST_SUN
         private int _tempTime;
-        private const float TempTimeLimit = 2000f;
+        private const float TempTimeLimit = 6000f;
 #endif
 
-        public Simulation(GL gl)
+        public Simulation(GL gl, in SimulationCreationSettings settings)
         {
+            _renderer = new SimulationRenderer(gl);
+
             // Create terrain
-            //const float amplitude = 100f;
-            //const float waterLevel = 0f;
-            var heightGen = new HeightGenerator(100f, 7, 0.5f);
-            var colors = new ColorStep[]
-            {
-                new(-100, new Vector3( 50/255f,  50/255f, 130/255f)), // Deep ocean
-                new(- 80, new Vector3( 50/255f,  50/255f, 180/255f)), // Ocean
-                new(- 10, new Vector3(100/255f, 100/255f, 110/255f)), // Gravelly ocean
-                new(   0, new Vector3(180/255f, 175/255f, 120/255f)), // Sandy
-                new(   2, new Vector3( 80/255f, 170/255f, 120/255f)), // Grass
-                new(  40, new Vector3( 80/255f, 190/255f, 120/255f)), // Grass brighter
-                new(  50, new Vector3(100/255f, 100/255f, 100/255f)), // Grayish mountain
-                new(  70, new Vector3(120/255f, 120/255f, 120/255f)), // Brighter gray
-                new(  85, new Vector3(210/255f, 200/255f, 190/255f)), // Redish peak (almost white)
-                new( 100, new Vector3(205/255f, 235/255f, 255/255f)), // White peaks
-            };
-            _terrain = TerrainGenerator.GenerateTerrain(gl, heightGen, colors, Terrain.SIZE, out Vector3 peak);
+            _terrain = TerrainGenerator.GenerateTerrain(gl, settings, out Vector3 peak);
+
+            // Create water
+#if DEBUG
+            Log.WriteLineWithTime("Generating water...");
+#endif
+            _water = WaterGenerator.Generate(gl, settings, _terrain);
 
             // Test add some lights
-            LightController.Instance.Add(new(new Vector3(Terrain.SIZE - (Terrain.SIZE / 4), 90, Terrain.SIZE - (Terrain.SIZE / 4)), new Vector3(10, 134f / 255, 5), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(Terrain.SIZE - (Terrain.SIZE / 4), 90, Terrain.SIZE / 4), new Vector3(218f / 255, 134f / 255, 226f / 255), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(Terrain.SIZE / 4, 90, Terrain.SIZE / 4), new Vector3(218f / 255, 134f / 255, 226f / 255), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90, settings.SizeZ - (settings.SizeZ / 4)), new Vector3(10, 134f / 255, 5), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90, settings.SizeZ / 4), new Vector3(218f / 255, 134f / 255, 226f / 255), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(settings.SizeX / 4, 90, settings.SizeZ / 4), new Vector3(218f / 255, 134f / 255, 226f / 255), new Vector3(1f, 0.01f, 0.002f)));
 
             // Create camera
 #if DEBUG
@@ -56,9 +51,6 @@ namespace DerpySimulation.World
             peak.Y += 5;
             var pr = new PositionRotation(peak, 0f, 30f, 0f);
             _camera = new Camera(pr);
-
-            // Create shader
-            _terrainShader = new(ProgramMain.OpenGL);
         }
 
         public void LogicTick()
@@ -69,17 +61,6 @@ namespace DerpySimulation.World
 
         public void Render(GL gl)
         {
-            gl.Enable(EnableCap.DepthTest);
-            gl.Enable(EnableCap.CullFace);
-            gl.CullFace(CullFaceMode.Back);
-            gl.Enable(EnableCap.Multisample);
-            gl.ProvokingVertex(VertexProvokingMode.FirstVertexConvention);
-            gl.ClearColor(0.49f, 0.89f, 0.98f, 1f); // Sky color
-            gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-#if DEBUG_WIREFRAME
-            gl.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-#endif
-
 #if DEBUG_TEST_SUN
             // Sun
             _tempTime++;
@@ -95,19 +76,24 @@ namespace DerpySimulation.World
             sun.Pos.Y = MathF.Sin(Utils.DegreesToRadiansF(timeF)) * 20000; // 0 -> 0, 0.25 -> 20000, 0.5 -> 0, 0.75 -> -20000
 #endif
 
-            // Terrain
-            _terrainShader.Use(gl);
+#if DEBUG_CAM_GRAVITY
+            const float gravity = 0.1f;
+            const float eyeHeight = 5.5f;
+            Vector3 camPos = _camera.PR.Position;
+            camPos.Y -= eyeHeight;
 
-            _terrainShader.SetCamera(gl, _camera);
-            _terrainShader.SetLights(gl, LightController.Instance);
+            camPos.Y -= gravity;
+            float floorHeight = _terrain.GetHeight(camPos.X, camPos.Z);
+            if (camPos.Y < floorHeight)
+            {
+                camPos.Y = floorHeight;
+            }
 
-            _terrain.Render(gl);
-
-            gl.UseProgram(0);
-
-#if DEBUG_WIREFRAME
-            gl.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); // Reset
+            camPos.Y += eyeHeight;
+            _camera.PR.Position = camPos;
 #endif
+
+            _renderer.Render(gl, _camera, _terrain, _water);
         }
     }
 }

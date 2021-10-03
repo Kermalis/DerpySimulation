@@ -105,6 +105,14 @@ namespace DerpySimulation.Render
             SlerpRotation(from.Rotation, to.Rotation, progress);
         }
 
+        /// <summary>For water</summary>
+        public Matrix4x4 CreateReflectionViewMatrix(float waterY)
+        {
+            Vector3 pos = Position;
+            pos.Y -= 2 * (pos.Y - waterY);
+            return Camera.CreateViewMatrix(pos, CreateRotation(_yawRadians, -_pitchRadians, _rollRadians));
+        }
+
         #region Movement
 
         public void MoveForward(float value)

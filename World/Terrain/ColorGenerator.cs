@@ -2,7 +2,7 @@
 using System;
 using System.Numerics;
 
-namespace DerpySimulation.World
+namespace DerpySimulation.World.Terrain
 {
     internal static class ColorGenerator
     {
@@ -10,11 +10,11 @@ namespace DerpySimulation.World
         public static Vector3[,] GenerateColors(ColorStep[] colors, float[,] gridHeights)
         {
             var gridColors = new Vector3[gridHeights.GetLength(0), gridHeights.GetLength(1)];
-            for (int z = 0; z < gridHeights.GetLength(0); z++)
+            for (int z = 0; z < gridHeights.GetLength(1); z++)
             {
-                for (int x = 0; x < gridHeights.GetLength(1); x++)
+                for (int x = 0; x < gridHeights.GetLength(0); x++)
                 {
-                    gridColors[z, x] = CalcColor(colors, gridHeights[z, x]);
+                    gridColors[x, z] = CalcColor(colors, gridHeights[x, z]);
                 }
             }
             return gridColors;
@@ -23,6 +23,11 @@ namespace DerpySimulation.World
         /// <summary>Determines the color of the vertex based on the provided height.</summary>
         private static Vector3 CalcColor(ColorStep[] colors, float height)
         {
+            // If height is not in the table, return the lowest color
+            if (colors[0].Height > height)
+            {
+                return colors[0].Color;
+            }
             int firstColorIdx = GetColorIdxForHeight(colors, height);
             Vector3 firstColor = colors[firstColorIdx].Color;
             float firstColorHeight = colors[firstColorIdx].Height;

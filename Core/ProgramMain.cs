@@ -26,6 +26,8 @@ namespace DerpySimulation.Core
 
         public delegate void ResizeEventHandler(uint w, uint h);
         public static event ResizeEventHandler Resized;
+        public static uint CurrentWidth { get; private set; }
+        public static uint CurrentHeight { get; private set; }
 
         private static Simulation _sim;
 
@@ -91,8 +93,15 @@ namespace DerpySimulation.Core
         {
             // Init in the proper thread
             RenderTickTime = LogicTickTime = DateTime.Now;
+            UpdateSize();
             _ = new LightController();
-            _sim = new Simulation(OpenGL);
+            _sim = new Simulation(OpenGL, SimulationCreationSettings.CreatePreset(2));
+        }
+        private static void UpdateSize()
+        {
+            SDL.SDL_GetWindowSize(_window, out int w, out int h);
+            CurrentWidth = (uint)w;
+            CurrentHeight = (uint)h;
         }
 
         private static void Main()
@@ -138,12 +147,6 @@ namespace DerpySimulation.Core
             GameExit();
         }
 
-        public static void GetWindowSize(out uint width, out uint height)
-        {
-            SDL.SDL_GetWindowSize(_window, out int w, out int h);
-            width = (uint)w;
-            height = (uint)h;
-        }
         private static bool HandleEvents()
         {
             while (SDL.SDL_PollEvent(out SDL.SDL_Event e) != 0)
@@ -161,8 +164,8 @@ namespace DerpySimulation.Core
                         {
                             case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
                             {
-                                SDL.SDL_GetWindowSize(_window, out int w, out int h);
-                                Resized?.Invoke((uint)w, (uint)h);
+                                UpdateSize();
+                                Resized?.Invoke(CurrentWidth, CurrentHeight);
                                 break;
                             }
                         }
@@ -193,8 +196,7 @@ namespace DerpySimulation.Core
         private static void DoRenderTick()
         {
             GL gl = OpenGL;
-            SDL.SDL_GetWindowSize(_window, out int w, out int h);
-            gl.Viewport(0, 0, (uint)w, (uint)h);
+            gl.Viewport(0, 0, CurrentWidth, CurrentHeight);
 
             // Render
             _sim.Render(gl);

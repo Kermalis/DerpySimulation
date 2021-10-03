@@ -2,7 +2,7 @@
 using Silk.NET.OpenGL;
 using System.Numerics;
 
-namespace DerpySimulation.World
+namespace DerpySimulation.World.Terrain
 {
     internal sealed class TerrainShader : GLShader
     {
@@ -11,6 +11,7 @@ namespace DerpySimulation.World
 
         private readonly int _lProjectionView;
         private readonly int _lModel;
+        private readonly int _lClippingPlane;
 
         private readonly int _lNumLights;
         private readonly int[] _lLightPos;
@@ -22,6 +23,7 @@ namespace DerpySimulation.World
         {
             _lProjectionView = GetUniformLocation(gl, "projectionViewMatrix");
             _lModel = GetUniformLocation(gl, "model");
+            _lClippingPlane = GetUniformLocation(gl, "clippingPlane");
 
             _lNumLights = GetUniformLocation(gl, "numLights");
             _lLightPos = new int[LightController.MAX_LIGHTS];
@@ -40,9 +42,13 @@ namespace DerpySimulation.World
             gl.UseProgram(0);
         }
 
-        public void SetCamera(GL gl, Camera c)
+        public void SetCamera(GL gl, in Matrix4x4 projectionView)
         {
-            Matrix4(gl, _lProjectionView, c.CreateViewMatrix() * c.Projection);
+            Matrix4(gl, _lProjectionView, projectionView);
+        }
+        public void SetClippingPlane(GL gl, in Vector4 v)
+        {
+            gl.Uniform4(_lClippingPlane, v);
         }
         public void SetLights(GL gl, LightController lights)
         {

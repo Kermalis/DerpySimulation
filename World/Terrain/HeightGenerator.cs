@@ -1,7 +1,10 @@
-﻿using DerpySimulation.Core;
+﻿#if DEBUG
+using DerpySimulation.Debug;
+#endif
+using DerpySimulation.Core;
 using System;
 
-namespace DerpySimulation.World
+namespace DerpySimulation.World.Terrain
 {
     // TODO: Optimize - The heights for neighboring values are constantly generated per octave (GetBiasedNoise), making it slow.
 
@@ -14,9 +17,12 @@ namespace DerpySimulation.World
         private readonly int _numOctaves; // Too many octaves smooths out the result and takes a lot longer to finish
         private readonly float _roughness; // Higher is more rough
 
-        public HeightGenerator(float amplitude, int numOctaves, float roughness, int? seed = null)
+        public HeightGenerator(float amplitude, int numOctaves, float roughness, int? seed)
         {
             _seed = seed ?? Environment.TickCount;
+#if DEBUG
+            Log.WriteLineWithTime("Seed: " + _seed.ToString("X8"));
+#endif
             _amplitude = amplitude;
             _numOctaves = numOctaves;
             _roughness = roughness;

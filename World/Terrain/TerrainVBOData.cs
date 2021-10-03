@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace DerpySimulation.World
+namespace DerpySimulation.World.Terrain
 {
     internal struct TerrainVBOData
     {
