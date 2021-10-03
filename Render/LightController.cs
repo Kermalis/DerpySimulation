@@ -29,7 +29,7 @@ namespace DerpySimulation.Render
 
         public LightController()
         {
-            Sun = new PointLight(new Vector3(0, 20000, 0), new Vector3(1, 1, 1));
+            Sun = new PointLight(new Vector3(0, 20000, 0), new Vector3(1.25f, 1.125f, 1f));
             Count = 1;
             _nonSunLights = new List<PointLight>();
 
