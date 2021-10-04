@@ -6,6 +6,7 @@ namespace DerpySimulation.World.Water
     internal sealed class WaterRenderer
     {
         private const float WAVE_SPEED = 0.002f;
+        public const float WAVE_HEIGHT = 0.25f; // Same value as in the shader
 
         private readonly WaterShader _shader;
 

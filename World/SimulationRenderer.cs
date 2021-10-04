@@ -63,11 +63,17 @@ namespace DerpySimulation.World
 #if DEBUG_WIREFRAME
             gl.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
 #endif
-            gl.Enable(EnableCap.ClipDistance0);
-            ReflectionPass(gl, cam, terrain, water.Y);
-            RefractionPass(gl, cam, terrain, water.Y);
-            gl.Disable(EnableCap.ClipDistance0);
-            MainPass(gl, cam, terrain, water);
+            // Do not render water while below it
+            // TODO: Underwater effect/shader
+            bool aboveWater = cam.PR.Position.Y > water.Y + WaterRenderer.WAVE_HEIGHT;
+            if (aboveWater)
+            {
+                gl.Enable(EnableCap.ClipDistance0);
+                ReflectionPass(gl, cam, terrain, water.Y);
+                RefractionPass(gl, cam, terrain, water.Y);
+                gl.Disable(EnableCap.ClipDistance0);
+            }
+            MainPass(gl, cam, terrain, water, aboveWater);
 #if DEBUG_WIREFRAME
             gl.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); // Reset
 #endif
@@ -102,12 +108,15 @@ namespace DerpySimulation.World
 
             FBOHelper.Unbind(gl);
         }
-        private void MainPass(GL gl, Camera cam, TerrainTile terrain, WaterTile water)
+        private void MainPass(GL gl, Camera cam, TerrainTile terrain, WaterTile water, bool aboveWater)
         {
             PreparePass(gl);
 
             _terrainRenderer.Render(gl, terrain, cam.CreateViewMatrix() * cam.Projection, Vector4.Zero);
-            _waterRenderer.Render(gl, water, cam, _reflectionTexture, _refractionTexture, _depthTexture);
+            if (aboveWater)
+            {
+                _waterRenderer.Render(gl, water, cam, _reflectionTexture, _refractionTexture, _depthTexture);
+            }
         }
     }
 }
