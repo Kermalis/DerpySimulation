@@ -1,4 +1,5 @@
 ﻿using DerpySimulation.Core;
+using DerpySimulation.World;
 using System.Numerics;
 
 namespace DerpySimulation.Render
@@ -11,12 +12,15 @@ namespace DerpySimulation.Render
 
         public Matrix4x4 Projection;
         public PositionRotation PR;
+        public ICameraMovement Movement;
+        private readonly Simulation _sim;
 
-        public Camera(in PositionRotation pr)
+        public Camera(ICameraMovement movement, Simulation sim)
         {
-            PR = pr;
-            UpdateProjection(ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
-            ProgramMain.Resized += UpdateProjection;
+            Movement = movement;
+            _sim = sim;
+            UpdateProjection(Display.CurrentWidth, Display.CurrentHeight);
+            Display.Resized += UpdateProjection;
         }
 
         private void UpdateProjection(uint w, uint h)
@@ -36,6 +40,19 @@ namespace DerpySimulation.Render
         {
             // A camera works by moving the entire world in the opposite direction of the camera
             return Matrix4x4.CreateTranslation(Vector3.Negate(pos)) * Matrix4x4.CreateFromQuaternion(Quaternion.Conjugate(rot));
+        }
+        /// <summary>For water</summary>
+        public Matrix4x4 CreateReflectionViewMatrix(float waterY)
+        {
+            Vector3 pos = PR.Position;
+            pos.Y -= 2 * (pos.Y - waterY);
+            return CreateViewMatrix(pos, PR.CreateReflectionQuaternion());
+        }
+
+        /// <summary>Updates see <see cref="PR"/></summary>
+        public void Update(float delta)
+        {
+            Movement.Update(delta, _sim, ref PR);
         }
     }
 }

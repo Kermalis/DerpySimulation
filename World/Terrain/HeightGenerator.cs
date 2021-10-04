@@ -1,8 +1,8 @@
-﻿#if DEBUG
+﻿using DerpySimulation.Core;
+using System;
+#if DEBUG
 using DerpySimulation.Debug;
 #endif
-using DerpySimulation.Core;
-using System;
 
 namespace DerpySimulation.World.Terrain
 {

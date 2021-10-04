@@ -1,5 +1,4 @@
-﻿using DerpySimulation.Core;
-using Silk.NET.OpenGL;
+﻿using Silk.NET.OpenGL;
 
 namespace DerpySimulation.Render
 {
@@ -23,7 +22,7 @@ namespace DerpySimulation.Render
             gl.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depthBuffer);
 
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-            gl.Viewport(0, 0, ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
+            gl.Viewport(0, 0, Display.CurrentWidth, Display.CurrentHeight);
 
             return fbo;
         }
@@ -49,7 +48,7 @@ namespace DerpySimulation.Render
             gl.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, TextureTarget.Texture2D, depthTexture, 0);
 
             gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-            gl.Viewport(0, 0, ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
+            gl.Viewport(0, 0, Display.CurrentWidth, Display.CurrentHeight);
 
             return fbo;
         }
@@ -64,7 +63,7 @@ namespace DerpySimulation.Render
         {
             gl.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
             gl.DrawBuffer(DrawBufferMode.Back);
-            gl.Viewport(0, 0, ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
+            gl.Viewport(0, 0, Display.CurrentWidth, Display.CurrentHeight);
         }
     }
 }

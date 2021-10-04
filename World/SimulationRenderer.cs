@@ -1,5 +1,4 @@
-﻿using DerpySimulation.Core;
-using DerpySimulation.Render;
+﻿using DerpySimulation.Render;
 using DerpySimulation.World.Terrain;
 using DerpySimulation.World.Water;
 using Silk.NET.OpenGL;
@@ -30,7 +29,7 @@ namespace DerpySimulation.World
             _waterRenderer = new WaterRenderer(gl);
 
             _mustCreateFBOs = true;
-            ProgramMain.Resized += ProgramMain_Resized;
+            Display.Resized += ProgramMain_Resized;
         }
 
         // On window resize, recreate water fbos
@@ -57,7 +56,7 @@ namespace DerpySimulation.World
             if (_mustCreateFBOs)
             {
                 _mustCreateFBOs = false;
-                CreateReflectionAndRefractionFBOs(gl, ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
+                CreateReflectionAndRefractionFBOs(gl, Display.CurrentWidth, Display.CurrentHeight);
             }
 
 #if DEBUG_WIREFRAME
@@ -92,16 +91,16 @@ namespace DerpySimulation.World
         }
         private void ReflectionPass(GL gl, Camera cam, TerrainTile terrain, float waterY)
         {
-            FBOHelper.Bind(gl, _reflectionFBO, DrawBufferMode.ColorAttachment0, ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
+            FBOHelper.Bind(gl, _reflectionFBO, DrawBufferMode.ColorAttachment0, Display.CurrentWidth, Display.CurrentHeight);
             PreparePass(gl);
 
-            _terrainRenderer.Render(gl, terrain, cam.PR.CreateReflectionViewMatrix(waterY) * cam.Projection, new Vector4(0, 1, 0, -waterY + REFLECT_OFFSET));
+            _terrainRenderer.Render(gl, terrain, cam.CreateReflectionViewMatrix(waterY) * cam.Projection, new Vector4(0, 1, 0, -waterY + REFLECT_OFFSET));
 
             FBOHelper.Unbind(gl);
         }
         private void RefractionPass(GL gl, Camera cam, TerrainTile terrain, float waterY)
         {
-            FBOHelper.Bind(gl, _refractionFBO, DrawBufferMode.ColorAttachment0, ProgramMain.CurrentWidth, ProgramMain.CurrentHeight);
+            FBOHelper.Bind(gl, _refractionFBO, DrawBufferMode.ColorAttachment0, Display.CurrentWidth, Display.CurrentHeight);
             PreparePass(gl);
 
             _terrainRenderer.Render(gl, terrain, cam.CreateViewMatrix() * cam.Projection, new Vector4(0, -1, 0, waterY + REFRACT_OFFSET));

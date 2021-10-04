@@ -1,8 +1,8 @@
-﻿#if DEBUG
+﻿using System.Numerics;
+using DerpySimulation.Core;
+#if DEBUG
 using System;
 #endif
-using System.Numerics;
-using DerpySimulation.Core;
 
 namespace DerpySimulation.Render
 {
@@ -106,11 +106,9 @@ namespace DerpySimulation.Render
         }
 
         /// <summary>For water</summary>
-        public Matrix4x4 CreateReflectionViewMatrix(float waterY)
+        public Quaternion CreateReflectionQuaternion()
         {
-            Vector3 pos = Position;
-            pos.Y -= 2 * (pos.Y - waterY);
-            return Camera.CreateViewMatrix(pos, CreateRotation(_yawRadians, -_pitchRadians, _rollRadians));
+            return CreateRotation(_yawRadians, -_pitchRadians, _rollRadians);
         }
 
         #region Movement
@@ -157,126 +155,6 @@ namespace DerpySimulation.Render
         }
 
         #endregion
-
-        public void Debug_Move(float moveSpeed)
-        {
-            // Reset roll pitch and yaw
-            if (InputManager.IsPressed(Key.Y))
-            {
-                ResetRotation();
-                return;
-            }
-            // Reset position
-            if (InputManager.IsPressed(Key.B))
-            {
-                Position = default;
-                return;
-            }
-            // Roll, Pitch, Yaw
-            if (InputManager.IsDown(Key.R))
-            {
-                // Pitch
-                if (InputManager.IsDown(Key.Up))
-                {
-                    if (_pitchDegrees < 89)
-                    {
-                        UpdatePitchDegrees(_pitchDegrees + 1);
-                    }
-                }
-                else if (InputManager.IsDown(Key.Down))
-                {
-                    if (_pitchDegrees > -89)
-                    {
-                        UpdatePitchDegrees(_pitchDegrees - 1);
-                    }
-                }
-                if (InputManager.IsDown(Key.X))
-                {
-                    // Roll
-                    if (InputManager.IsDown(Key.Left))
-                    {
-                        UpdateRollDegrees(_rollDegrees == 0 ? 359 : _rollDegrees - 1);
-                    }
-                    else if (InputManager.IsDown(Key.Right))
-                    {
-                        UpdateRollDegrees(_rollDegrees == 359 ? 0 : _rollDegrees + 1);
-                    }
-                }
-                else
-                {
-                    // Yaw
-                    if (InputManager.IsDown(Key.Left))
-                    {
-                        UpdateYawDegrees(_yawDegrees == 0 ? 359 : _yawDegrees - 1);
-                    }
-                    else if (InputManager.IsDown(Key.Right))
-                    {
-                        UpdateYawDegrees(_yawDegrees == 359 ? 0 : _yawDegrees + 1);
-                    }
-                }
-                return;
-            }
-            // Move along axis
-            if (InputManager.IsDown(Key.L))
-            {
-                const float xMove = 0.1f;
-                const float yMove = 0.1f;
-                const float zMove = 0.1f;
-
-                if (InputManager.IsDown(Key.Up))
-                {
-                    if (InputManager.IsDown(Key.X))
-                    {
-                        MoveUpY(yMove * moveSpeed);
-                    }
-                    else
-                    {
-                        MoveForwardZ(zMove * moveSpeed);
-                    }
-                }
-                else if (InputManager.IsDown(Key.Down))
-                {
-                    if (InputManager.IsDown(Key.X))
-                    {
-                        MoveDownY(yMove * moveSpeed);
-                    }
-                    else
-                    {
-                        MoveBackwardZ(zMove * moveSpeed);
-                    }
-                }
-                if (InputManager.IsDown(Key.Left))
-                {
-                    MoveLeftX(xMove * moveSpeed);
-                }
-                else if (InputManager.IsDown(Key.Right))
-                {
-                    MoveRightX(xMove * moveSpeed);
-                }
-                return;
-            }
-            // Move along our camera angle
-            {
-                const float forwardMove = 0.1f;
-                if (InputManager.IsDown(Key.Up))
-                {
-                    MoveForward(forwardMove * moveSpeed);
-                }
-                else if (InputManager.IsDown(Key.Down))
-                {
-                    MoveBackward(forwardMove * moveSpeed);
-                }
-                if (InputManager.IsDown(Key.Left))
-                {
-                    MoveLeft(forwardMove * moveSpeed);
-                }
-                else if (InputManager.IsDown(Key.Right))
-                {
-                    MoveRight(forwardMove * moveSpeed);
-                }
-                return;
-            }
-        }
 
 #if DEBUG
         public override string ToString()

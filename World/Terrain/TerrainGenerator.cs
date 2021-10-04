@@ -1,9 +1,9 @@
-﻿#if DEBUG
-using DerpySimulation.Debug;
-#endif
-using DerpySimulation.Render;
+﻿using DerpySimulation.Render;
 using Silk.NET.OpenGL;
 using System.Numerics;
+#if DEBUG
+using DerpySimulation.Debug;
+#endif
 
 namespace DerpySimulation.World.Terrain
 {

@@ -1,150 +1,78 @@
-#if DEBUG
-using DerpySimulation.Debug;
-using System.Runtime.InteropServices;
-#endif
+using DerpySimulation.Input;
+using DerpySimulation.Render;
+using DerpySimulation.World;
 using SDL2;
 using Silk.NET.OpenGL;
 using System;
-using DerpySimulation.World;
-using DerpySimulation.Render;
+#if DEBUG
+using DerpySimulation.Debug;
+#endif
 
 namespace DerpySimulation.Core
 {
     internal static class ProgramMain
     {
-        public const int NumTicksPerSecond = 20;
+        private static DateTime _renderTickTime;
 
-        private const float NumMillisecondsPerTick = 1_000f / NumTicksPerSecond;
+        public delegate void MainCallback(GL gl, float delta);
+        public static MainCallback Callback;
 
-        public static DateTime LogicTickTime { get; private set; }
-        public static DateTime RenderTickTime { get; private set; }
-        public static TimeSpan RenderTimeSinceLastFrame { get; private set; }
-
-        private static readonly IntPtr _window;
-        private static readonly IntPtr _gl;
-        public static readonly GL OpenGL;
-
-        public delegate void ResizeEventHandler(uint w, uint h);
-        public static event ResizeEventHandler Resized;
-        public static uint CurrentWidth { get; private set; }
-        public static uint CurrentHeight { get; private set; }
-
-        private static Simulation _sim;
-
-        static ProgramMain()
+        private static void Init()
         {
-            // SDL 2
-            if (SDL.SDL_Init(SDL.SDL_INIT_AUDIO | SDL.SDL_INIT_VIDEO | SDL.SDL_INIT_GAMECONTROLLER) != 0)
-            {
-                Print_SDL_Error("SDL could not initialize!");
-            }
+            _renderTickTime = DateTime.Now;
+            Display.Init();
+            _ = new LightController(); // Init instance of LightController
 
-            // Use OpenGL 3.3 core
-            if (SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_MAJOR_VERSION, 3) != 0)
-            {
-                Print_SDL_Error("Could not set OpenGL's major version!");
-            }
-            if (SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 3) != 0)
-            {
-                Print_SDL_Error("Could not set OpenGL's minor version!");
-            }
-            if (SDL.SDL_GL_SetAttribute(SDL.SDL_GLattr.SDL_GL_CONTEXT_PROFILE_MASK, SDL.SDL_GLprofile.SDL_GL_CONTEXT_PROFILE_CORE) != 0)
-            {
-                Print_SDL_Error("Could not set OpenGL's profile!");
-            }
-
-            _window = SDL.SDL_CreateWindow("Derpy Simulation", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1280, 720,
-                SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE
-#if FULLSCREEN
-                | SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP
-#endif
-                );
-            if (_window == IntPtr.Zero)
-            {
-                Print_SDL_Error("Could not create the window!");
-            }
-
-            _gl = SDL.SDL_GL_CreateContext(_window);
-            if (_gl == IntPtr.Zero)
-            {
-                Print_SDL_Error("Could not create the OpenGL context!");
-            }
-            if (SDL.SDL_GL_SetSwapInterval(1) != 0)
-            {
-                Print_SDL_Error("Could not enable VSync!");
-            }
-            if (SDL.SDL_GL_MakeCurrent(_window, _gl) != 0)
-            {
-                Print_SDL_Error("Could not start OpenGL on the window!");
-            }
-            OpenGL = GL.GetApi(SDL.SDL_GL_GetProcAddress);
-#if DEBUG
-            unsafe
-            {
-                OpenGL.Enable(EnableCap.DebugOutput);
-                OpenGL.DebugMessageCallback(HandleGLError, null);
-            }
-#endif
-
-            // The rest inits in Start()
+            // Initial callback for now is already the simulation
+            Callback = Simulation.CB_Debug_CreateSimulation;
         }
-
-        private static void Start()
-        {
-            // Init in the proper thread
-            RenderTickTime = LogicTickTime = DateTime.Now;
-            UpdateSize();
-            _ = new LightController();
-            _sim = new Simulation(OpenGL, SimulationCreationSettings.CreatePreset(2));
-        }
-        private static void UpdateSize()
-        {
-            SDL.SDL_GetWindowSize(_window, out int w, out int h);
-            CurrentWidth = (uint)w;
-            CurrentHeight = (uint)h;
-        }
-
         private static void Main()
         {
-            Start();
+            Init();
 
             // Main loop
             while (true)
             {
+                // Clear per-frame button states
+                Keyboard.Prepare();
+                Mouse.Prepare();
+
+                // Grab all OS events
                 if (HandleEvents())
                 {
-                    break;
+                    break; // Break if quit was requested
                 }
 
+                // Calculate delta time
                 DateTime now = DateTime.Now;
-                DateTime prev = LogicTickTime;
-                bool doTick;
+                DateTime prev = _renderTickTime;
+                _renderTickTime = now;
+                float deltaTime;
                 if (now <= prev)
                 {
 #if DEBUG
                     Log.WriteLineWithTime("Time went back!");
 #endif
-                    doTick = true;
+                    deltaTime = 0;
+                    continue; // Skip current frame if time went back
                 }
                 else
                 {
-                    doTick = (now - prev).TotalMilliseconds >= NumMillisecondsPerTick;
-                }
-                if (doTick)
-                {
-                    LogicTickTime = now;
-                    DoLogicTick();
+                    deltaTime = (float)(now - prev).TotalSeconds;
                 }
 
-                now = DateTime.Now;
-                prev = RenderTickTime;
-                RenderTimeSinceLastFrame = now <= prev ? TimeSpan.Zero : now - prev;
-                RenderTickTime = now;
-                DoRenderTick();
+                // Run frame
+                Display.PrepareFrame();
+                Callback(Display.OpenGL, deltaTime);
+                Display.PresentFrame();
             }
 
             // Quitting
-            GameExit();
+            Quit();
+        }
+        private static void Quit()
+        {
+            Display.Quit();
         }
 
         private static bool HandleEvents()
@@ -153,90 +81,33 @@ namespace DerpySimulation.Core
             {
                 switch (e.type)
                 {
-                    case SDL.SDL_EventType.SDL_QUIT:
+                    case SDL.SDL_EventType.SDL_QUIT: return true;
+                    case SDL.SDL_EventType.SDL_KEYUP: Keyboard.OnKeyDown(e, false); break;
+                    case SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN: Mouse.OnButtonDown(e, true); break;
+                    case SDL.SDL_EventType.SDL_MOUSEBUTTONUP: Mouse.OnButtonDown(e, false); break;
+                    case SDL.SDL_EventType.SDL_MOUSEWHEEL: Mouse.OnScroll(e); break;
+                    case SDL.SDL_EventType.SDL_MOUSEMOTION: Mouse.OnMove(e); break;
+                    case SDL.SDL_EventType.SDL_KEYDOWN:
                     {
-                        return true;
+                        // Don't accept repeat events
+                        if (e.key.repeat == 0)
+                        {
+                            Keyboard.OnKeyDown(e, true);
+                        }
+                        break;
                     }
                     case SDL.SDL_EventType.SDL_WINDOWEVENT:
                     {
                         SDL.SDL_WindowEventID ev = e.window.windowEvent;
                         switch (ev)
                         {
-                            case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED:
-                            {
-                                UpdateSize();
-                                Resized?.Invoke(CurrentWidth, CurrentHeight);
-                                break;
-                            }
+                            case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED: Display.OnResized(); break;
                         }
-                        break;
-                    }
-                    case SDL.SDL_EventType.SDL_KEYDOWN:
-                    {
-                        SDL.SDL_Keycode sym = e.key.keysym.sym;
-                        InputManager.OnKeyDown(sym, true);
-                        break;
-                    }
-                    case SDL.SDL_EventType.SDL_KEYUP:
-                    {
-                        SDL.SDL_Keycode sym = e.key.keysym.sym;
-                        InputManager.OnKeyDown(sym, false);
                         break;
                     }
                 }
             }
             return false;
-        }
-
-        private static void DoLogicTick()
-        {
-            InputManager.LogicTick();
-            _sim.LogicTick();
-        }
-        private static void DoRenderTick()
-        {
-            GL gl = OpenGL;
-            gl.Viewport(0, 0, CurrentWidth, CurrentHeight);
-
-            // Render
-            _sim.Render(gl);
-
-            // Present to window
-            SDL.SDL_GL_SwapWindow(_window);
-        }
-
-        private static void Print_SDL_Error(string error)
-        {
-            error = string.Format("{2}{0}SDL Error: \"{1}\"", Environment.NewLine, SDL.SDL_GetError(), error);
-#if DEBUG
-            Log.WriteLineWithTime(error);
-#endif
-            throw new Exception(error);
-        }
-#if DEBUG
-        private static void HandleGLError(GLEnum _, GLEnum type, int id, GLEnum severity, int length, IntPtr message, IntPtr __)
-        {
-            if (severity == GLEnum.DebugSeverityNotification)
-            {
-                return;
-            }
-            string msg = Marshal.PtrToStringAnsi(message, length);
-            Log.WriteLineWithTime("GL Error:");
-            Log.ModifyIndent(+1);
-            Log.WriteLine(string.Format("Message: \"{0}\"", msg));
-            Log.WriteLine(string.Format("Type: \"{0}\"", type));
-            Log.WriteLine(string.Format("Id: \"{0}\"", id));
-            Log.WriteLine(string.Format("Severity: \"{0}\"", severity));
-            Log.ModifyIndent(-1);
-            ;
-        }
-#endif
-
-        private static void GameExit()
-        {
-            SDL.SDL_GL_DeleteContext(_gl);
-            SDL.SDL_DestroyWindow(_window);
-            SDL.SDL_Quit();
         }
     }
 }

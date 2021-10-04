@@ -8,14 +8,14 @@ namespace DerpySimulation.World.Terrain
     internal sealed class TerrainTile
     {
         public Model Model { get; }
-        private readonly int _sizeX, _sizeZ;
+        public readonly int SizeX, SizeZ;
         private readonly float[,] _heights; // There is one extra height in each direction than the size
 
         public TerrainTile(Model m, float[,] heights)
         {
             Model = m;
-            _sizeX = heights.GetLength(0) - 1;
-            _sizeZ = heights.GetLength(1) - 1;
+            SizeX = heights.GetLength(0) - 1;
+            SizeZ = heights.GetLength(1) - 1;
             _heights = heights;
         }
 
@@ -23,13 +23,13 @@ namespace DerpySimulation.World.Terrain
         {
             // -1 because if you have 5 heights, there are 4 grid squares
             // The size in units of each grid square
-            float gridXSize = (_sizeX + 1f) / _sizeX;
-            float gridZSize = (_sizeZ + 1f) / _sizeZ;
+            float gridXSize = (SizeX + 1f) / SizeX;
+            float gridZSize = (SizeZ + 1f) / SizeZ;
             // The grid id
             int gridX = (int)(x / gridXSize);
             int gridZ = (int)(z / gridZSize);
             // Check if it's out of bounds
-            if (gridX < 0 || gridZ < 0 || gridX >= _sizeX || gridZ >= _sizeZ)
+            if (gridX < 0 || gridZ < 0 || gridX >= SizeX || gridZ >= SizeZ)
             {
                 return 0;
             }

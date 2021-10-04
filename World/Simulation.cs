@@ -1,15 +1,16 @@
-﻿#if DEBUG
+﻿using DerpySimulation.Core;
+using DerpySimulation.Input;
+using DerpySimulation.Render;
+using DerpySimulation.World.Terrain;
+using DerpySimulation.World.Water;
+using Silk.NET.OpenGL;
+using System.Numerics;
+#if DEBUG
 using DerpySimulation.Debug;
 #endif
 #if DEBUG_TEST_SUN
-using DerpySimulation.Core;
 using System;
 #endif
-using DerpySimulation.Render;
-using Silk.NET.OpenGL;
-using System.Numerics;
-using DerpySimulation.World.Terrain;
-using DerpySimulation.World.Water;
 
 namespace DerpySimulation.World
 {
@@ -49,18 +50,71 @@ namespace DerpySimulation.World
             Log.WriteLineWithTime("Done generating! The peak is at " + peak);
 #endif
             peak.Y += 5;
-            var pr = new PositionRotation(peak, 0f, 30f, 0f);
-            _camera = new Camera(pr);
+            /*var camMove = new LockOnCameraMovement
+            {
+                //Target = new Vector3(settings.SizeX / 2f, GetHeight(settings.SizeX / 2f, settings.SizeZ / 2f), settings.SizeZ / 2f)
+                //Target = peak
+                Target = LightController.Instance[1].Pos
+            };*/
+            var camMove = new FreeRoamCameraMovement();
+            _camera = new Camera(camMove, this);
+            _camera.PR.Position = peak;
+            Mouse.LockMouseInWindow(true);
         }
 
-        public void LogicTick()
+        public static void CB_Debug_CreateSimulation(GL gl, float _)
         {
-            _camera.PR.Debug_Move(50f);
-            //System.Console.WriteLine(_camera.PR);
+            var sim = new Simulation(gl, SimulationCreationSettings.CreatePreset(0));
+            ProgramMain.Callback = sim.CB_RunSimulation;
         }
 
-        public void Render(GL gl)
+        public float GetHeight(float x, float z)
         {
+            return _terrain.GetHeight(x, z);
+        }
+        public void ClampToBorders(ref float x, ref float z)
+        {
+            if (x < 0)
+            {
+                x = 0;
+            }
+            else if (x >= _terrain.SizeX)
+            {
+                x = _terrain.SizeX - float.Epsilon;
+            }
+            if (z < 0)
+            {
+                z = 0;
+            }
+            else if (z >= _terrain.SizeZ)
+            {
+                z = _terrain.SizeZ - float.Epsilon;
+            }
+        }
+        public void ClampToBordersAndFloor(ref Vector3 pos, float yOffset)
+        {
+            ClampToBorders(ref pos.X, ref pos.Z);
+            float floor = GetHeight(pos.X, pos.Z) + yOffset;
+            if (pos.Y < floor)
+            {
+                pos.Y = floor;
+            }
+        }
+
+        public void CB_RunSimulation(GL gl, float delta)
+        {
+            // Check for pause input
+            if (Keyboard.JustPressed(Key.Escape))
+            {
+                Mouse.LockMouseInWindow(false);
+                Mouse.CenterMouseInWindow();
+                ProgramMain.Callback = CB_Paused;
+                Render(gl); // Still render this frame before returning
+                return;
+            }
+
+            _camera.Update(delta);
+
 #if DEBUG_TEST_SUN
             // Sun
             _tempTime++;
@@ -76,23 +130,22 @@ namespace DerpySimulation.World
             sun.Pos.Y = MathF.Sin(Utils.DegreesToRadiansF(timeF)) * 20000; // 0 -> 0, 0.25 -> 20000, 0.5 -> 0, 0.75 -> -20000
 #endif
 
-#if DEBUG_CAM_GRAVITY
-            const float gravity = 0.1f;
-            const float eyeHeight = 5.5f;
-            Vector3 camPos = _camera.PR.Position;
-            camPos.Y -= eyeHeight;
-
-            camPos.Y -= gravity;
-            float floorHeight = _terrain.GetHeight(camPos.X, camPos.Z);
-            if (camPos.Y < floorHeight)
+            Render(gl);
+        }
+        private void CB_Paused(GL gl, float _)
+        {
+            // Check for unpause input
+            if (Keyboard.JustPressed(Key.Escape))
             {
-                camPos.Y = floorHeight;
+                Mouse.LockMouseInWindow(true);
+                ProgramMain.Callback = CB_RunSimulation;
             }
 
-            camPos.Y += eyeHeight;
-            _camera.PR.Position = camPos;
-#endif
+            Render(gl);
+        }
 
+        public void Render(GL gl)
+        {
             _renderer.Render(gl, _camera, _terrain, _water);
         }
     }
