@@ -46,7 +46,7 @@ namespace DerpySimulation.World.Terrain
             float newHeight = height - firstColorHeight;
             float heightDifference = nextColorHeight - firstColorHeight; // The amount between the two heights
             float nextColorAmt = newHeight / heightDifference; // Convert newHeight to a value between 0 and 1 exclusive
-            return Utils.InterpolateColors(firstColor, nextColor, nextColorAmt);
+            return Utils.LerpColor(firstColor, nextColor, nextColorAmt);
         }
 
         private static int GetColorIdxForHeight(ColorStep[] colors, float height)

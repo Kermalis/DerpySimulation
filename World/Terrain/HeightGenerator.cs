@@ -31,6 +31,7 @@ namespace DerpySimulation.World.Terrain
         /// <summary>Gets the final height of these coordinates.</summary>
         public float GenerateHeight(int x, int z)
         {
+            // TODO: Octaves should be sampling from radically different coordinates
             float total = 0;
             float d = MathF.Pow(2, _numOctaves - 1);
             for (int i = 0; i < _numOctaves; i++)
@@ -72,11 +73,9 @@ namespace DerpySimulation.World.Terrain
         private float GetNoise(int x, int z)
         {
             // Create a seed for these coordinates
-            uint lehmerSeed = (uint)(((604171 * x) + (4393139 * z) + _seed) ^ 534742);
-            // Call randomizer
-            uint result = Utils.LehmerRandomizer(lehmerSeed);
+            uint lehmer = (uint)(((604171 * x) + (4393139 * z) + _seed) ^ 534742);
             // Use as a float between -1 and 1
-            return (result / (float)uint.MaxValue) * 2 - 1;
+            return Utils.LehmerRandomizerFloat(ref lehmer) * 2 - 1;
         }
     }
 }

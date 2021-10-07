@@ -4,7 +4,7 @@ using DerpySimulation.World;
 using System;
 using System.Numerics;
 
-namespace DerpySimulation.Render
+namespace DerpySimulation.Render.Cameras
 {
     /// <summary>Keeps the camera pointed at a certain position.</summary>
     internal sealed class LockOnCameraMovement : ICameraMovement
@@ -15,7 +15,9 @@ namespace DerpySimulation.Render
 
         private const float PITCH_MIN = -45f;
         private const float PITCH_MAX = 90f;
+        private const float X_SIZE = 0.1f;
         private const float Y_OFFSET = 5f; // Extra height above the target
+        private const float Z_SIZE = 0.1f;
         private const float ZOOM_MIN = 1f;
         private const float ZOOM_MAX = 100f;
 
@@ -33,10 +35,10 @@ namespace DerpySimulation.Render
             UpdateYaw(delta);
             UpdateZoom(delta);
 
-            float pitchRadians = Utils.DegreesToRadiansF(_pitch.Current);
+            float pitchRadians = _pitch.Current * Utils.DegToRad;
             float horizontalDistance = _distanceFromTarget.Current * MathF.Cos(pitchRadians);
             float verticalDistance = _distanceFromTarget.Current * MathF.Sin(pitchRadians);
-            float horizontalTheta = Utils.DegreesToRadiansF(_angleAroundTarget.Current);
+            float horizontalTheta = _angleAroundTarget.Current * Utils.DegToRad;
 
             ref Vector3 pos = ref pr.Position;
             pos.X = Target.X + (horizontalDistance * MathF.Sin(horizontalTheta));
@@ -44,10 +46,10 @@ namespace DerpySimulation.Render
             pos.Z = Target.Z + (horizontalDistance * MathF.Cos(horizontalTheta));
 
             // Don't allow the camera to leave the terrain or go into the ground
-            sim.ClampToBordersAndFloor(ref pos, Y_OFFSET);
+            sim.ClampToBordersAndFloor(ref pos, X_SIZE, Y_OFFSET, Z_SIZE);
 
             float finalYaw = (360 - _angleAroundTarget.Current) % 360;
-            pr.SetRotation(0, _pitch.Current, finalYaw);
+            pr.Rotation.Set(finalYaw, _pitch.Current, 0f);
         }
 
         private void UpdatePitch(float delta)

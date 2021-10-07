@@ -8,15 +8,15 @@
         public static uint[] GenerateIndexBuffer(uint sizeX, uint sizeZ)
         {
             uint[] indices = new uint[6 * sizeX * sizeZ];
+            int bufferIdx = 0;
             uint rowLength = sizeX * 2;
-            int pointer = 0;
-            StoreTopSection(rowLength, sizeX, sizeZ, indices, ref pointer);
-            StoreSecondLastLine(rowLength, sizeX, sizeZ, indices, ref pointer);
-            StoreLastLine(rowLength, sizeX, sizeZ, indices, ref pointer);
+            StoreTopSection(indices, ref bufferIdx, rowLength, sizeX, sizeZ);
+            StoreSecondLastLine(indices, ref bufferIdx, rowLength, sizeX, sizeZ);
+            StoreLastLine(indices, ref bufferIdx, rowLength, sizeX, sizeZ);
             return indices;
         }
 
-        private static void StoreTopSection(uint rowLength, uint sizeX, uint sizeZ, uint[] indices, ref int pointer)
+        private static void StoreTopSection(uint[] indices, ref int bufferIdx, uint rowLength, uint sizeX, uint sizeZ)
         {
             for (uint z = 0; z < sizeZ - 2; z++)
             {
@@ -26,11 +26,11 @@
                     uint topRight = topLeft + 1;
                     uint bottomLeft = topLeft + rowLength;
                     uint bottomRight = bottomLeft + 1;
-                    StoreQuad(topLeft, topRight, bottomLeft, bottomRight, x % 2 != z % 2, indices, ref pointer);
+                    StoreQuad(indices, ref bufferIdx, topLeft, topRight, bottomLeft, bottomRight, x % 2 != z % 2);
                 }
             }
         }
-        private static void StoreSecondLastLine(uint rowLength, uint sizeX, uint sizeZ, uint[] indices, ref int pointer)
+        private static void StoreSecondLastLine(uint[] indices, ref int bufferIdx, uint rowLength, uint sizeX, uint sizeZ)
         {
             uint z = sizeZ - 2;
             for (uint x = 0; x < sizeX; x++)
@@ -39,10 +39,10 @@
                 uint topRight = topLeft + 1;
                 uint bottomLeft = topLeft + rowLength - x;
                 uint bottomRight = bottomLeft + 1;
-                StoreQuad(topLeft, topRight, bottomLeft, bottomRight, x % 2 != z % 2, indices, ref pointer);
+                StoreQuad(indices, ref bufferIdx, topLeft, topRight, bottomLeft, bottomRight, x % 2 != z % 2);
             }
         }
-        private static void StoreLastLine(uint rowLength, uint sizeX, uint sizeZ, uint[] indices, ref int pointer)
+        private static void StoreLastLine(uint[] indices, ref int bufferIdx, uint rowLength, uint sizeX, uint sizeZ)
         {
             uint z = sizeZ - 1;
             for (uint x = 0; x < sizeX; x++)
@@ -51,29 +51,29 @@
                 uint topRight = topLeft + 1;
                 uint bottomLeft = topLeft + sizeX + 1;
                 uint bottomRight = bottomLeft + 1;
-                StoreLastRowQuad(topLeft, topRight, bottomLeft, bottomRight, x % 2 != z % 2, indices, ref pointer);
+                StoreLastRowQuad(indices, ref bufferIdx, topLeft, topRight, bottomLeft, bottomRight, x % 2 != z % 2);
             }
         }
 
-        private static void StoreQuad(uint topLeft, uint topRight, uint bottomLeft, uint bottomRight, bool rightHanded, uint[] indices, ref int pointer)
+        private static void StoreQuad(uint[] indices, ref int bufferIdx, uint topLeft, uint topRight, uint bottomLeft, uint bottomRight, bool rightHanded)
         {
-            StoreLeftTriangle(topLeft, topRight, bottomLeft, bottomRight, rightHanded, indices, ref pointer);
-            indices[pointer++] = topRight;
-            indices[pointer++] = rightHanded ? topLeft : bottomLeft;
-            indices[pointer++] = bottomRight;
+            StoreLeftTriangle(indices, ref bufferIdx, topLeft, topRight, bottomLeft, bottomRight, rightHanded);
+            indices[bufferIdx++] = topRight;
+            indices[bufferIdx++] = rightHanded ? topLeft : bottomLeft;
+            indices[bufferIdx++] = bottomRight;
         }
-        private static void StoreLastRowQuad(uint topLeft, uint topRight, uint bottomLeft, uint bottomRight, bool rightHanded, uint[] indices, ref int pointer)
+        private static void StoreLastRowQuad(uint[] indices, ref int bufferIdx, uint topLeft, uint topRight, uint bottomLeft, uint bottomRight, bool rightHanded)
         {
-            StoreLeftTriangle(topLeft, topRight, bottomLeft, bottomRight, rightHanded, indices, ref pointer);
-            indices[pointer++] = bottomRight;
-            indices[pointer++] = topRight;
-            indices[pointer++] = rightHanded ? topLeft : bottomLeft;
+            StoreLeftTriangle(indices, ref bufferIdx, topLeft, topRight, bottomLeft, bottomRight, rightHanded);
+            indices[bufferIdx++] = bottomRight;
+            indices[bufferIdx++] = topRight;
+            indices[bufferIdx++] = rightHanded ? topLeft : bottomLeft;
         }
-        private static void StoreLeftTriangle(uint topLeft, uint topRight, uint bottomLeft, uint bottomRight, bool rightHanded, uint[] indices, ref int pointer)
+        private static void StoreLeftTriangle(uint[] indices, ref int bufferIdx, uint topLeft, uint topRight, uint bottomLeft, uint bottomRight, bool rightHanded)
         {
-            indices[pointer++] = topLeft;
-            indices[pointer++] = bottomLeft;
-            indices[pointer++] = rightHanded ? bottomRight : topRight;
+            indices[bufferIdx++] = topLeft;
+            indices[bufferIdx++] = bottomLeft;
+            indices[bufferIdx++] = rightHanded ? bottomRight : topRight;
         }
     }
 }

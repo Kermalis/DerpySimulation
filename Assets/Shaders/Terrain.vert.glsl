@@ -9,9 +9,9 @@ layout(location = 2) in vec3 in_color;
 
 flat out vec4 pass_color;
 
-uniform mat4 model;
+uniform mat4 projectionView;
+uniform mat4 transform;
 uniform vec4 clippingPlane;
-uniform mat4 projectionViewMatrix;
 uniform uint numLights;
 uniform vec3 lightPos[MAX_LIGHTS];
 uniform vec3 lightColor[MAX_LIGHTS];
@@ -21,7 +21,7 @@ uniform vec3 lightAttenuation[MAX_LIGHTS];
 vec4 calcLighting(vec4 worldPos)
 {
     // Update normal location with model location
-    vec3 norm = normalize((model * vec4(in_normal, 0)).xyz);
+    vec3 norm = normalize((transform * vec4(in_normal, 0)).xyz);
 
     // Calculate diffuse lighting for each light
     vec3 totalDiffuse = vec3(0);
@@ -46,8 +46,8 @@ vec4 calcLighting(vec4 worldPos)
 void main()
 {
     // Calculate vertex pos
-    vec4 worldPos = model * vec4(in_position, 1);
-    gl_Position = projectionViewMatrix * worldPos;
+    vec4 worldPos = transform * vec4(in_position, 1);
+    gl_Position = projectionView * worldPos;
     // This makes sure parts below the water aren't in the reflection, and parts above the water aren't in the refraction
     // The clipping plane isn't enabled when rendering the whole terrain as normal
     gl_ClipDistance[0] = dot(worldPos, clippingPlane);

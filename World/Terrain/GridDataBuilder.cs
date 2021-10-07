@@ -1,4 +1,5 @@
 ﻿using DerpySimulation.Core;
+using DerpySimulation.Render.Data;
 using System.Numerics;
 
 namespace DerpySimulation.World.Terrain
@@ -47,7 +48,7 @@ namespace DerpySimulation.World.Terrain
             return vertices;
         }
 
-        public void StoreSquareData(TerrainVBOData[] data, ref int dataIdx)
+        public void StoreSquareData(VBOData_PosNormalColor[] data, ref int dataIdx)
         {
             StoreTopLeftVertex(data, ref dataIdx);
             if (_x == _lastXIndex || _z != _lastZIndex)
@@ -55,7 +56,7 @@ namespace DerpySimulation.World.Terrain
                 StoreTopRightVertex(data, ref dataIdx);
             }
         }
-        public void StoreBottomRowData(TerrainVBOData[] data, ref int dataIdx)
+        public void StoreBottomRowData(VBOData_PosNormalColor[] data, ref int dataIdx)
         {
             if (_x == 0)
             {
@@ -64,21 +65,21 @@ namespace DerpySimulation.World.Terrain
             StoreBottomRightVertex(data, ref dataIdx);
         }
 
-        private void StoreTopLeftVertex(TerrainVBOData[] data, ref int dataIdx)
+        private void StoreTopLeftVertex(VBOData_PosNormalColor[] data, ref int dataIdx)
         {
-            data[dataIdx++] = new TerrainVBOData(_positions[0], _normalLeft, _colors[0]);
+            data[dataIdx++] = new VBOData_PosNormalColor(_positions[0], _normalLeft, _colors[0]);
         }
-        private void StoreBottomLeftVertex(TerrainVBOData[] data, ref int dataIdx)
+        private void StoreBottomLeftVertex(VBOData_PosNormalColor[] data, ref int dataIdx)
         {
-            data[dataIdx++] = new TerrainVBOData(_positions[1], _normalLeft, _colors[1]);
+            data[dataIdx++] = new VBOData_PosNormalColor(_positions[1], _normalLeft, _colors[1]);
         }
-        private void StoreTopRightVertex(TerrainVBOData[] data, ref int dataIdx)
+        private void StoreTopRightVertex(VBOData_PosNormalColor[] data, ref int dataIdx)
         {
-            data[dataIdx++] = new TerrainVBOData(_positions[2], _normalRight, _colors[2]);
+            data[dataIdx++] = new VBOData_PosNormalColor(_positions[2], _normalRight, _colors[2]);
         }
-        private void StoreBottomRightVertex(TerrainVBOData[] data, ref int dataIdx)
+        private void StoreBottomRightVertex(VBOData_PosNormalColor[] data, ref int dataIdx)
         {
-            data[dataIdx++] = new TerrainVBOData(_positions[3], _normalRight, _colors[3]);
+            data[dataIdx++] = new VBOData_PosNormalColor(_positions[3], _normalRight, _colors[3]);
         }
     }
 }

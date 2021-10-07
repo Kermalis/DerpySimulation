@@ -2,7 +2,7 @@
 using DerpySimulation.World;
 using System.Numerics;
 
-namespace DerpySimulation.Render
+namespace DerpySimulation.Render.Cameras
 {
     internal sealed class Camera
     {
@@ -13,19 +13,17 @@ namespace DerpySimulation.Render
         public Matrix4x4 Projection;
         public PositionRotation PR;
         public ICameraMovement Movement;
-        private readonly Simulation _sim;
 
-        public Camera(ICameraMovement movement, Simulation sim)
+        public Camera(ICameraMovement movement)
         {
             Movement = movement;
-            _sim = sim;
             UpdateProjection(Display.CurrentWidth, Display.CurrentHeight);
             Display.Resized += UpdateProjection;
         }
 
         private void UpdateProjection(uint w, uint h)
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(Utils.DegreesToRadiansF(FOV), (float)w / h, NEAR_PLANE, RENDER_DISTANCE);
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(FOV * Utils.DegToRad, (float)w / h, NEAR_PLANE, RENDER_DISTANCE);
         }
 
         public Matrix4x4 CreateViewMatrix()
@@ -34,7 +32,7 @@ namespace DerpySimulation.Render
         }
         public static Matrix4x4 CreateViewMatrix(in PositionRotation pr)
         {
-            return CreateViewMatrix(pr.Position, pr.Rotation);
+            return CreateViewMatrix(pr.Position, pr.Rotation.Value);
         }
         public static Matrix4x4 CreateViewMatrix(in Vector3 pos, in Quaternion rot)
         {
@@ -46,13 +44,17 @@ namespace DerpySimulation.Render
         {
             Vector3 pos = PR.Position;
             pos.Y -= 2 * (pos.Y - waterY);
-            return CreateViewMatrix(pos, PR.CreateReflectionQuaternion());
+
+            ref Rotation rot = ref PR.Rotation;
+            Quaternion q = Rotation.CreateQuaternion(rot.Yaw, -rot.Pitch, rot.Roll);
+
+            return CreateViewMatrix(pos, q);
         }
 
         /// <summary>Updates see <see cref="PR"/></summary>
-        public void Update(float delta)
+        public void Update(float delta, Simulation sim)
         {
-            Movement.Update(delta, _sim, ref PR);
+            Movement.Update(delta, sim, ref PR);
         }
     }
 }

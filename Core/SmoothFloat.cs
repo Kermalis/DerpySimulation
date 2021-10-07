@@ -17,7 +17,7 @@
         public void Update(float delta)
         {
             float difference = Target - Current;
-            float change = difference * delta * _maxSpeed;
+            float change = delta * difference * _maxSpeed;
             Current += change;
         }
     }

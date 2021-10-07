@@ -1,12 +1,14 @@
-﻿using DerpySimulation.Render;
+﻿using DerpySimulation.Render.Cameras;
+using DerpySimulation.Render.Shaders;
+using DerpySimulation.World.Water;
 using Silk.NET.OpenGL;
 
-namespace DerpySimulation.World.Water
+namespace DerpySimulation.Render.Renderers
 {
     internal sealed class WaterRenderer
     {
         private const float WAVE_SPEED = 0.002f;
-        public const float WAVE_HEIGHT = 0.25f; // Same value as in the shader
+        private const float WAVE_HEIGHT = 0.25f; // Same value as in the shader
 
         private readonly WaterShader _shader;
 
@@ -15,6 +17,10 @@ namespace DerpySimulation.World.Water
             _shader = new WaterShader(gl);
         }
 
+        public static bool ShouldRenderWater(float camY, float waterY)
+        {
+            return camY > waterY + WaterRenderer.WAVE_HEIGHT;
+        }
         public void Render(GL gl, WaterTile tile, Camera cam, uint reflectionTexture, uint refractionTexture, uint depthTexture)
         {
             tile.AnimTime += WAVE_SPEED;
@@ -25,7 +31,7 @@ namespace DerpySimulation.World.Water
             _shader.Use(gl);
             _shader.SetWaveTime(gl, tile.AnimTime);
             _shader.SetCamera(gl, cam);
-            _shader.SetLights(gl, LightController.Instance);
+            _shader.SetLights(gl);
             _shader.SetHeight(gl, tile.Y);
 
             gl.ActiveTexture(TextureUnit.Texture0);
@@ -40,6 +46,11 @@ namespace DerpySimulation.World.Water
             // Done
             gl.UseProgram(0);
             gl.Disable(EnableCap.Blend);
+        }
+
+        public void Delete(GL gl)
+        {
+            _shader.Delete(gl);
         }
     }
 }

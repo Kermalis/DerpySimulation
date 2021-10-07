@@ -1,29 +1,29 @@
-﻿using DerpySimulation.Render;
+﻿using DerpySimulation.Render.Meshes;
 using Silk.NET.OpenGL;
 
 namespace DerpySimulation.World.Water
 {
     internal sealed class WaterTile
     {
-        public Model Model { get; }
+        private readonly Mesh _mesh;
         public float Y { get; }
 
         public float AnimTime;
 
-        public WaterTile(Model m, float y)
+        public WaterTile(Mesh m, float y)
         {
-            Model = m;
+            _mesh = m;
             Y = y;
         }
 
         public void Render(GL gl)
         {
-            Model.Render(gl);
+            _mesh.Render(gl);
         }
 
         public void Delete(GL gl)
         {
-            Model.Delete(gl);
+            _mesh.Delete(gl);
         }
     }
 }

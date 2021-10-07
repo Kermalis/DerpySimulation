@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 
-namespace DerpySimulation.World.Water
+namespace DerpySimulation.Render.Data
 {
-    internal unsafe struct WaterVBOData
+    internal unsafe struct VBOData_Water
     {
         public const int OffsetOfPos = 0;
         public const int OffsetOfPartnerVertex1 = OffsetOfPos + (2 * sizeof(float));
@@ -13,7 +13,7 @@ namespace DerpySimulation.World.Water
         public fixed sbyte PartnerVertex1[2];
         public fixed sbyte PartnerVertex2[2];
 
-        public WaterVBOData(Vector2 pos, Vector2 indicator1, Vector2 indicator2)
+        public VBOData_Water(Vector2 pos, Vector2 indicator1, Vector2 indicator2)
         {
             Pos = pos;
             PartnerVertex1[0] = (sbyte)indicator1.X;

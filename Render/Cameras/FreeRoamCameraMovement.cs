@@ -2,7 +2,7 @@
 using DerpySimulation.Input;
 using DerpySimulation.World;
 
-namespace DerpySimulation.Render
+namespace DerpySimulation.Render.Cameras
 {
     internal sealed class FreeRoamCameraMovement : ICameraMovement
     {
@@ -14,7 +14,9 @@ namespace DerpySimulation.Render
 
         private const float PITCH_MIN = -45f;
         private const float PITCH_MAX = 90f;
+        private const float X_SIZE = 0.1f;
         private const float Y_OFFSET = 5f; // Offset above the ground
+        private const float Z_SIZE = 0.1f;
 
         private SmoothFloat _pitch = new(10, 25f);
         private SmoothFloat _yaw = new(0, 25f);
@@ -28,10 +30,10 @@ namespace DerpySimulation.Render
             UpdatePos(delta, ref pr);
 
             // Don't allow the camera to leave the terrain or go into the ground
-            sim.ClampToBordersAndFloor(ref pr.Position, Y_OFFSET);
+            sim.ClampToBordersAndFloor(ref pr.Position, X_SIZE, Y_OFFSET, Z_SIZE);
 
             float finalYaw = (360 - _yaw.Current) % 360;
-            pr.SetRotation(0, _pitch.Current, finalYaw);
+            pr.Rotation.Set(finalYaw, _pitch.Current, 0f);
         }
 
         private void UpdatePitch(float delta)

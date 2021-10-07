@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Numerics;
 
-namespace DerpySimulation.Render
+namespace DerpySimulation.Render.Shaders
 {
     internal abstract class GLShader
     {
@@ -41,13 +41,13 @@ namespace DerpySimulation.Render
             string error = gl.GetShaderInfoLog(handle);
             if (!string.IsNullOrEmpty(error))
             {
-                throw new Exception($"Error compiling \"{type}\" shader: {error}");
+                throw new Exception($"Error compiling \"{asset}\" shader: {error}");
             }
 
             return handle;
         }
 
-        protected int GetUniformLocation(GL gl, string name, bool throwIfNotExists = true)
+        public int GetUniformLocation(GL gl, string name, bool throwIfNotExists = true)
         {
             int location = gl.GetUniformLocation(Program, name);
             if (throwIfNotExists && location == -1)

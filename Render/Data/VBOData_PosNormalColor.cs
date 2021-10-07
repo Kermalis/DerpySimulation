@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 
-namespace DerpySimulation.World.Terrain
+namespace DerpySimulation.Render.Data
 {
-    internal struct TerrainVBOData
+    internal struct VBOData_PosNormalColor
     {
         public const int OffsetOfPos = 0;
         public const int OffsetOfNormal = OffsetOfPos + (3 * sizeof(float));
@@ -13,7 +13,7 @@ namespace DerpySimulation.World.Terrain
         public readonly Vector3 Normal;
         public readonly Vector3 Color;
 
-        public TerrainVBOData(in Vector3 pos, in Vector3 normal, in Vector3 color)
+        public VBOData_PosNormalColor(in Vector3 pos, in Vector3 normal, in Vector3 color)
         {
             Pos = pos;
             Normal = normal;

@@ -1,6 +1,7 @@
-﻿using DerpySimulation.World;
+﻿using DerpySimulation.Core;
+using DerpySimulation.World;
 
-namespace DerpySimulation.Render
+namespace DerpySimulation.Render.Cameras
 {
     internal interface ICameraMovement
     {

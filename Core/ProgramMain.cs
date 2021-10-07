@@ -1,5 +1,7 @@
 using DerpySimulation.Input;
 using DerpySimulation.Render;
+using DerpySimulation.Render.Meshes;
+using DerpySimulation.Render.Renderers;
 using DerpySimulation.World;
 using SDL2;
 using Silk.NET.OpenGL;
@@ -12,20 +14,28 @@ namespace DerpySimulation.Core
 {
     internal static class ProgramMain
     {
+        public delegate void MainCallbackDelegate(GL gl, float delta);
+        public delegate void QuitCallbackDelegate(GL gl);
+
         private static DateTime _renderTickTime;
 
-        public delegate void MainCallback(GL gl, float delta);
-        public static MainCallback Callback;
+        public static MainCallbackDelegate Callback;
+        public static QuitCallbackDelegate QuitCallback;
 
+        // Initializes the first callback, the window, and instances
         private static void Init()
         {
             _renderTickTime = DateTime.Now;
             Display.Init();
+
+            GL gl = Display.OpenGL;
             _ = new LightController(); // Init instance of LightController
+            _ = new FoodRenderer(gl); // Init instance of FoodRenderer
 
             // Initial callback for now is already the simulation
-            Callback = Simulation.CB_Debug_CreateSimulation;
+            Simulation.Debug_CreateSimulation(gl);
         }
+        // Entry point of the program and main loop
         private static void Main()
         {
             Init();
@@ -70,8 +80,15 @@ namespace DerpySimulation.Core
             // Quitting
             Quit();
         }
+        // Handles freeing resources once the program is closing
         private static void Quit()
         {
+            GL gl = Display.OpenGL;
+            QuitCallback(gl);
+
+            FoodRenderer.Instance.Delete(gl);
+
+            AssimpLoader.Quit();
             Display.Quit();
         }
 

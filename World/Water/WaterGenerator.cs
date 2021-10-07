@@ -1,40 +1,66 @@
-﻿using DerpySimulation.Render;
+﻿using DerpySimulation.Render.Data;
+using DerpySimulation.Render.Meshes;
 using DerpySimulation.World.Terrain;
 using Silk.NET.OpenGL;
 using System.Numerics;
 
 namespace DerpySimulation.World.Water
 {
-    /// <summary>Creates a flat mesh of water. Indicators are used to know which other vertices are around.</summary>
+    /// <summary>Creates a flat mesh of water. Indicators are used to know which other vertices the current vertex is paired with to make a triangle.</summary>
     internal static class WaterGenerator
     {
         public static WaterTile Generate(GL gl, in SimulationCreationSettings settings, TerrainTile terrain)
         {
-            WaterVBOData[] waterMeshData = CreateMeshData(settings, terrain, out uint numData);
-            return new WaterTile(Model.CreateWaterModel(gl, waterMeshData, numData), settings.WaterLevel);
+            VBOData_Water[] waterMeshData = CreateMeshData(settings, terrain, out uint numData);
+            return new WaterTile(CreateMesh(gl, waterMeshData, numData), settings.WaterLevel);
         }
 
-        private static WaterVBOData[] CreateMeshData(in SimulationCreationSettings settings, TerrainTile terrain, out uint bufferIdx)
+        private static VBOData_Water[] CreateMeshData(in SimulationCreationSettings settings, TerrainTile terrain, out uint bufferIdx)
         {
-            var buffer = new WaterVBOData[6 * settings.SizeX * settings.SizeZ];
+            var buffer = new VBOData_Water[6 * settings.SizeX * settings.SizeZ];
             bufferIdx = 0;
             for (int z = 0; z < settings.SizeZ; z++)
             {
                 for (int x = 0; x < settings.SizeX; x++)
                 {
-                    StoreGridSquare(x, z, settings.WaterLevel, terrain, buffer, ref bufferIdx);
+                    StoreGridSquare(buffer, ref bufferIdx, x, z, settings.WaterLevel, terrain);
                 }
             }
             return buffer;
         }
+        private static unsafe Mesh CreateMesh(GL gl, VBOData_Water[] vertices, uint numVertices)
+        {
+            // Create vao
+            uint vao = gl.CreateVertexArray();
+            gl.BindVertexArray(vao);
 
-        private static void StoreGridSquare(int x, int z, float waterY, TerrainTile terrain, WaterVBOData[] buffer, ref uint bufferIdx)
+            // Create vbo
+            uint vbo = gl.GenBuffer();
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
+            fixed (void* data = vertices)
+            {
+                gl.BufferData(BufferTargetARB.ArrayBuffer, VBOData_Water.SizeOf * numVertices, data, BufferUsageARB.StaticDraw);
+            }
+
+            gl.EnableVertexAttribArray(0);
+            gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, VBOData_Water.SizeOf, (void*)VBOData_Water.OffsetOfPos);
+            gl.EnableVertexAttribArray(1);
+            gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Byte, false, VBOData_Water.SizeOf, (void*)VBOData_Water.OffsetOfPartnerVertex1);
+            gl.EnableVertexAttribArray(2);
+            gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Byte, false, VBOData_Water.SizeOf, (void*)VBOData_Water.OffsetOfPartnerVertex2);
+
+            gl.BindVertexArray(0);
+
+            return new Mesh(vao, numVertices, true, vbo);
+        }
+
+        private static void StoreGridSquare(VBOData_Water[] buffer, ref uint bufferIdx, int x, int z, float waterY, TerrainTile terrain)
         {
             Vector2[] cornerPos = CalculateCornerPositions(x, z);
-            StoreTriangle(cornerPos, true, waterY, terrain, buffer, ref bufferIdx);
-            StoreTriangle(cornerPos, false, waterY, terrain, buffer, ref bufferIdx);
+            StoreTriangle(buffer, ref bufferIdx, cornerPos, true, waterY, terrain);
+            StoreTriangle(buffer, ref bufferIdx, cornerPos, false, waterY, terrain);
         }
-        private static void StoreTriangle(Vector2[] cornerPos, bool left, float waterY, TerrainTile terrain, WaterVBOData[] buffer, ref uint bufferIdx)
+        private static void StoreTriangle(VBOData_Water[] buffer, ref uint bufferIdx, Vector2[] cornerPos, bool left, float waterY, TerrainTile terrain)
         {
             int index0 = left ? 0 : 2;
             int index1 = 1;
@@ -49,14 +75,14 @@ namespace DerpySimulation.World.Water
             {
                 return;
             }
-            StoreVertex(v0, index0, cornerPos, index1, index2, buffer, ref bufferIdx);
-            StoreVertex(v1, index1, cornerPos, index2, index0, buffer, ref bufferIdx);
-            StoreVertex(v2, index2, cornerPos, index0, index1, buffer, ref bufferIdx);
+            StoreVertex(buffer, ref bufferIdx, v0, index0, cornerPos, index1, index2);
+            StoreVertex(buffer, ref bufferIdx, v1, index1, cornerPos, index2, index0);
+            StoreVertex(buffer, ref bufferIdx, v2, index2, cornerPos, index0, index1);
         }
-        private static void StoreVertex(Vector2 cornerPos, int currentVertex, Vector2[] vertexPositions, int vertex1, int vertex2, WaterVBOData[] buffer, ref uint bufferIdx)
+        private static void StoreVertex(VBOData_Water[] buffer, ref uint bufferIdx, Vector2 cornerPos, int currentVertex, Vector2[] vertexPositions, int vertex1, int vertex2)
         {
             GetIndicators(currentVertex, vertexPositions, vertex1, vertex2, out Vector2 offset1, out Vector2 offset2);
-            buffer[bufferIdx++] = new WaterVBOData(cornerPos, offset1, offset2);
+            buffer[bufferIdx++] = new VBOData_Water(cornerPos, offset1, offset2);
         }
 
         private static Vector2[] CalculateCornerPositions(int x, int z)
@@ -73,8 +99,8 @@ namespace DerpySimulation.World.Water
             Vector2 currentVertexPos = vertexPositions[currentVertex];
             Vector2 vertex1Pos = vertexPositions[vertex1];
             Vector2 vertex2Pos = vertexPositions[vertex2];
-            offset1 = Vector2.Subtract(vertex1Pos, currentVertexPos);
-            offset2 = Vector2.Subtract(vertex2Pos, currentVertexPos);
+            offset1 = vertex1Pos - currentVertexPos;
+            offset2 = vertex2Pos - currentVertexPos;
         }
     }
 }

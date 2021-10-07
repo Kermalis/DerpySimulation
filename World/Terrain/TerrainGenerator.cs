@@ -1,4 +1,5 @@
-﻿using DerpySimulation.Render;
+﻿using DerpySimulation.Render.Data;
+using DerpySimulation.Render.Meshes;
 using Silk.NET.OpenGL;
 using System.Numerics;
 #if DEBUG
@@ -48,7 +49,7 @@ namespace DerpySimulation.World.Terrain
 #if DEBUG
             Log.WriteLineWithTime("Generating mesh data...");
 #endif
-            TerrainVBOData[] terrainData = CreateMeshData(gridHeights, gridColors, numVertices);
+            VBOData_PosNormalColor[] terrainData = CreateMeshData(gridHeights, gridColors, numVertices);
 #if DEBUG
             Log.WriteLineWithTime("Generating indices...");
 #endif
@@ -56,7 +57,7 @@ namespace DerpySimulation.World.Terrain
 #if DEBUG
             Log.ModifyIndent(-1);
 #endif
-            return new TerrainTile(Model.CreateTerrainModel(gl, terrainData, indices), gridHeights);
+            return new TerrainTile(CreateMesh(gl, terrainData, indices), gridHeights);
         }
 
         private static uint CalcVertexCount(uint sizeX, uint sizeZ)
@@ -67,9 +68,9 @@ namespace DerpySimulation.World.Terrain
         }
 
         /// <summary>Creates the vbo vertex data for the GPU.</summary>
-        private static TerrainVBOData[] CreateMeshData(float[,] gridHeights, Vector3[,] gridColors, uint numVertices)
+        private static VBOData_PosNormalColor[] CreateMeshData(float[,] gridHeights, Vector3[,] gridColors, uint numVertices)
         {
-            var data = new TerrainVBOData[numVertices];
+            var data = new VBOData_PosNormalColor[numVertices];
             int dataIdx = 0;
             var lastRow = new GridDataBuilder[gridHeights.GetLength(0) - 1];
             for (int z = 0; z < gridHeights.GetLength(1) - 1; z++)
@@ -89,6 +90,41 @@ namespace DerpySimulation.World.Terrain
                 lastRow[i].StoreBottomRowData(data, ref dataIdx);
             }
             return data;
+        }
+        private static unsafe Mesh CreateMesh(GL gl, VBOData_PosNormalColor[] vertices, uint[] indices)
+        {
+            uint elementCount = (uint)indices.Length;
+
+            // Create vao
+            uint vao = gl.CreateVertexArray();
+            gl.BindVertexArray(vao);
+
+            // Create ebo
+            uint ebo = gl.GenBuffer();
+            gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, ebo);
+            fixed (void* data = indices)
+            {
+                gl.BufferData(BufferTargetARB.ElementArrayBuffer, sizeof(uint) * elementCount, data, BufferUsageARB.StaticDraw);
+            }
+
+            // Create vbo
+            uint vbo = gl.GenBuffer();
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
+            fixed (void* data = vertices)
+            {
+                gl.BufferData(BufferTargetARB.ArrayBuffer, VBOData_PosNormalColor.SizeOf * (uint)vertices.Length, data, BufferUsageARB.StaticDraw);
+            }
+
+            gl.EnableVertexAttribArray(0);
+            gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, VBOData_PosNormalColor.SizeOf, (void*)VBOData_PosNormalColor.OffsetOfPos);
+            gl.EnableVertexAttribArray(1);
+            gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, VBOData_PosNormalColor.SizeOf, (void*)VBOData_PosNormalColor.OffsetOfNormal);
+            gl.EnableVertexAttribArray(2);
+            gl.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, VBOData_PosNormalColor.SizeOf, (void*)VBOData_PosNormalColor.OffsetOfColor);
+
+            gl.BindVertexArray(0);
+
+            return new Mesh(vao, elementCount, false, ebo, vbo);
         }
     }
 }

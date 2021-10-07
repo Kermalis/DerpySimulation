@@ -21,7 +21,7 @@ out vec3 pass_toCameraVector;
 out vec3 pass_specular;
 out vec3 pass_diffuse;
 
-uniform mat4 projectionViewMatrix;
+uniform mat4 projectionView;
 uniform float height;
 uniform vec3 cameraPos;
 uniform float waveTime;
@@ -74,7 +74,7 @@ void main()
     vec3 vertex2 = currentVertex + vec3(in_partnerVertex2.x, 0, in_partnerVertex2.y);
 
     // The base position from the vbo
-    pass_clipSpaceOriginal = projectionViewMatrix * vec4(currentVertex, 1);
+    pass_clipSpaceOriginal = projectionView * vec4(currentVertex, 1);
 
     // Apply distortion to all 3 vertices
     currentVertex = distort(currentVertex);
@@ -85,7 +85,7 @@ void main()
     pass_normal = getNormal(currentVertex, vertex1, vertex2);
 
     // The currentVertex is now distorted so we need another variable for it, which is used to get the water depth later
-    pass_clipSpaceDistorted = projectionViewMatrix * vec4(currentVertex, 1);
+    pass_clipSpaceDistorted = projectionView * vec4(currentVertex, 1);
     gl_Position = pass_clipSpaceDistorted;
 
     // Calculate the vector of the camera direction
