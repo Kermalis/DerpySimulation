@@ -40,7 +40,7 @@ namespace DerpySimulation.Render.Meshes
                 throw new InvalidDataException(_assimp.GetErrorStringS());
             }
 
-            dir = Path.GetDirectoryName(asset);
+            dir = Path.GetDirectoryName(asset) ?? throw new Exception("Invalid asset path");
             return scene;
         }
 

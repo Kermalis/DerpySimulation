@@ -18,7 +18,7 @@ namespace DerpySimulation.Render
         public static uint CurrentHeight { get; private set; }
 
         public delegate void ResizeEventHandler(uint w, uint h);
-        public static event ResizeEventHandler Resized;
+        public static event ResizeEventHandler? Resized;
 
         static Display()
         {

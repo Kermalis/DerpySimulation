@@ -19,8 +19,8 @@ namespace DerpySimulation.Core
 
         private static DateTime _renderTickTime;
 
-        public static MainCallbackDelegate Callback;
-        public static QuitCallbackDelegate QuitCallback;
+        public static MainCallbackDelegate Callback = null!; // Initialized in Init()
+        public static QuitCallbackDelegate QuitCallback = null!; // Initialized in Init()
 
         // Initializes the first callback, the window, and instances
         private static void Init()

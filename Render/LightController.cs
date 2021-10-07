@@ -9,7 +9,7 @@ namespace DerpySimulation.Render
     {
         public const int MAX_LIGHTS = 4;
 
-        public static LightController Instance { get; private set; }
+        public static LightController Instance { get; private set; } = null!; // Initialized in ProgramMain
 
         public int Count { get; private set; }
         public PointLight Sun { get; }
