@@ -162,7 +162,7 @@ namespace DerpySimulation.Render.Meshes
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
             fixed (void* d = vertices)
             {
-                gl.BufferData(BufferTargetARB.ArrayBuffer, VBOData_PosNormalUV.SizeOf * (uint)vertices.Length, d, BufferUsageARB.StaticDraw);
+                gl.BufferData(BufferTargetARB.ArrayBuffer, VBOData_PosNormal.SizeOf * (uint)vertices.Length, d, BufferUsageARB.StaticDraw);
             }
 
             gl.EnableVertexAttribArray(0);
