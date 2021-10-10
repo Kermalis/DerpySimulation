@@ -17,13 +17,13 @@ namespace DerpySimulation.Render.Cameras
         public Camera(ICameraMovement movement)
         {
             Movement = movement;
-            UpdateProjection(Display.CurrentWidth, Display.CurrentHeight);
+            UpdateProjection();
             Display.Resized += UpdateProjection;
         }
 
-        private void UpdateProjection(uint w, uint h)
+        private void UpdateProjection()
         {
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(FOV * Utils.DegToRad, (float)w / h, NEAR_PLANE, RENDER_DISTANCE);
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(FOV * Utils.DegToRad, (float)Display.CurrentWidth / Display.CurrentHeight, NEAR_PLANE, RENDER_DISTANCE);
         }
 
         public Matrix4x4 CreateViewMatrix()

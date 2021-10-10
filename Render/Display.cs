@@ -10,6 +10,9 @@ namespace DerpySimulation.Render
 {
     internal static class Display
     {
+        private const int DEFAULT_WIDTH = 1280;
+        private const int DEFAULT_HEIGHT = 720;
+
         private static readonly IntPtr _window;
         private static readonly IntPtr _gl;
         public static readonly GL OpenGL;
@@ -17,7 +20,7 @@ namespace DerpySimulation.Render
         public static uint CurrentWidth { get; private set; }
         public static uint CurrentHeight { get; private set; }
 
-        public delegate void ResizeEventHandler(uint w, uint h);
+        public delegate void ResizeEventHandler();
         public static event ResizeEventHandler? Resized;
 
         static Display()
@@ -42,7 +45,7 @@ namespace DerpySimulation.Render
                 Print_SDL_Error("Could not set OpenGL's profile!");
             }
 
-            _window = SDL.SDL_CreateWindow("Derpy Simulation", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 1280, 720,
+            _window = SDL.SDL_CreateWindow("Derpy Simulation", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, DEFAULT_WIDTH, DEFAULT_HEIGHT,
                 SDL.SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE
 #if FULLSCREEN
                 | SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP
@@ -89,10 +92,10 @@ namespace DerpySimulation.Render
             SDL.SDL_GL_SwapWindow(_window);
         }
 
-        public static void OnResized()
+        public static void OnWindowResized()
         {
             UpdateSize();
-            Resized?.Invoke(CurrentWidth, CurrentHeight);
+            Resized?.Invoke();
         }
         private static void UpdateSize()
         {

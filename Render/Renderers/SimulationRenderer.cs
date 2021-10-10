@@ -35,7 +35,7 @@ namespace DerpySimulation.Render.Renderers
         }
 
         // On window resize, recreate water fbos
-        private void ProgramMain_Resized(uint w, uint h)
+        private void ProgramMain_Resized()
         {
             _mustCreateFBOs = true;
         }

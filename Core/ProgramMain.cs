@@ -17,15 +17,12 @@ namespace DerpySimulation.Core
         public delegate void MainCallbackDelegate(GL gl, float delta);
         public delegate void QuitCallbackDelegate(GL gl);
 
-        private static DateTime _renderTickTime;
-
         public static MainCallbackDelegate Callback = null!; // Initialized in Init()
         public static QuitCallbackDelegate QuitCallback = null!; // Initialized in Init()
 
         // Initializes the first callback, the window, and instances
         private static void Init()
         {
-            _renderTickTime = DateTime.Now;
             Display.Init();
 
             GL gl = Display.OpenGL;
@@ -41,22 +38,22 @@ namespace DerpySimulation.Core
             Init();
 
             // Main loop
-            while (true)
+            DateTime time = DateTime.Now;
             {
                 // Clear per-frame button states
                 Keyboard.Prepare();
                 Mouse.Prepare();
 
                 // Grab all OS events
-                if (HandleEvents())
+                if (HandleOSEvents())
                 {
-                    break; // Break if quit was requested
+                    break; // Break if quit was requested by OS
                 }
 
                 // Calculate delta time
                 DateTime now = DateTime.Now;
-                DateTime prev = _renderTickTime;
-                _renderTickTime = now;
+                DateTime prev = time;
+                time = now;
                 float deltaTime;
                 if (now <= prev)
                 {
@@ -92,7 +89,7 @@ namespace DerpySimulation.Core
             Display.Quit();
         }
 
-        private static bool HandleEvents()
+        private static bool HandleOSEvents()
         {
             while (SDL.SDL_PollEvent(out SDL.SDL_Event e) != 0)
             {
@@ -118,7 +115,7 @@ namespace DerpySimulation.Core
                         SDL.SDL_WindowEventID ev = e.window.windowEvent;
                         switch (ev)
                         {
-                            case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED: Display.OnResized(); break;
+                            case SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED: Display.OnWindowResized(); break;
                         }
                         break;
                     }
