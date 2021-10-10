@@ -31,7 +31,7 @@ namespace DerpySimulation.Render.Shaders
             {
                 PointLight l = lights[i + startIndex];
                 gl.Uniform3(_lLightPos[i], ref l.Pos);
-                gl.Uniform3(_lLightColor[i], ref l.Color);
+                Color3.PutInShader(gl, _lLightColor[i], l.Color);
                 gl.Uniform3(_lLightAttenuation[i], ref l.Attenuation);
             }
         }

@@ -1,4 +1,5 @@
-﻿using DerpySimulation.Render.Data;
+﻿using DerpySimulation.Render;
+using DerpySimulation.Render.Data;
 using DerpySimulation.Render.Meshes;
 using Silk.NET.OpenGL;
 using System.Numerics;
@@ -38,7 +39,7 @@ namespace DerpySimulation.World.Terrain
 #if DEBUG
             Log.WriteLineWithTime("Generating colors...");
 #endif
-            Vector3[,] gridColors = ColorGenerator.GenerateColors(settings.Colors, gridHeights);
+            Color3[,] gridColors = ColorGenerator.GenerateColors(settings.Colors, gridHeights);
 
             // Create terrain
 #if DEBUG
@@ -68,7 +69,7 @@ namespace DerpySimulation.World.Terrain
         }
 
         /// <summary>Creates the vbo vertex data for the GPU.</summary>
-        private static VBOData_PosNormalColor[] CreateMeshData(float[,] gridHeights, Vector3[,] gridColors, uint numVertices)
+        private static VBOData_PosNormalColor[] CreateMeshData(float[,] gridHeights, Color3[,] gridColors, uint numVertices)
         {
             var data = new VBOData_PosNormalColor[numVertices];
             int dataIdx = 0;

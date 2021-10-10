@@ -45,9 +45,9 @@ namespace DerpySimulation.World
             _water = WaterGenerator.Generate(gl, settings, _terrain);
 
             // Test add some lights
-            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ - (settings.SizeZ / 4)), new Vector3(20f, 0f, 0f), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ / 4), new Vector3(0f, 10f, 10f), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(0f, 150f, 0f), new Vector3(0f, 0f, 15f), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ - (settings.SizeZ / 4)), new Color3(20f, 0f, 0f), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ / 4), new Color3(0f, 10f, 10f), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(0f, 150f, 0f), new Color3(0f, 0f, 15f), new Vector3(1f, 0.01f, 0.002f)));
             // Test add food
             const int num = (int)FoodEntity.MAX_FOOD - 1;
             float f = 2f;

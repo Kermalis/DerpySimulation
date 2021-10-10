@@ -29,14 +29,6 @@ namespace DerpySimulation.Core
             var normal = Vector3.Cross(tangentA, tangentB);
             return Vector3.Normalize(normal);
         }
-        public static Vector3 LerpColor(in Vector3 c1, in Vector3 c2, float progress)
-        {
-            return new Vector3(
-                c1.X + (c2.X - c1.X) * progress,
-                c1.Y + (c2.Y - c1.Y) * progress,
-                c1.Z + (c2.Z - c1.Z) * progress
-                );
-        }
 
         public static void LehmerRandomizer(ref uint state)
         {
