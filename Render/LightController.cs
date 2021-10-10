@@ -13,7 +13,7 @@ namespace DerpySimulation.Render
 
         public int Count { get; private set; }
         public PointLight Sun { get; }
-        private readonly List<PointLight> _nonSunLights;
+        private readonly PointLight[] _nonSunLights;
 
         public PointLight this[int index]
         {
@@ -29,11 +29,11 @@ namespace DerpySimulation.Render
 
         public LightController()
         {
-            Sun = new PointLight(new Vector3(0, 20000, 0), new Vector3(1.25f, 1.125f, 1f));
-            Count = 1;
-            _nonSunLights = new List<PointLight>();
-
             Instance = this;
+
+            Sun = new PointLight(new Vector3(0, 20000, 0), new Color3(1.25f, 1.125f, 1f));
+            Count = 1;
+            _nonSunLights = new PointLight[MAX_LIGHTS - 1];
         }
 
         public void Add(PointLight light)
@@ -42,14 +42,14 @@ namespace DerpySimulation.Render
             {
                 throw new InvalidOperationException("Too many lights");
             }
-            _nonSunLights.Add(light);
+            _nonSunLights[Count - 1] = light;
             Count++;
         }
 
         public IEnumerator<PointLight> GetEnumerator()
         {
             yield return Sun;
-            for (int i = 0; i < _nonSunLights.Count; i++)
+            for (int i = 0; i < _nonSunLights.Length; i++)
             {
                 yield return _nonSunLights[i];
             }
