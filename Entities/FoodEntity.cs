@@ -14,6 +14,9 @@ namespace DerpySimulation.Entities
         private const float BOUNCE_HEIGHT = 0.75f;
         private const float BOUNCE_SPEED = 0.9f;
 
+        // The spins can be global to save CPU for a lot of food
+        private static Rotation _globalRotation;
+
         private float _bounceProgress;
 
         public readonly Vector3 Color;
@@ -24,13 +27,13 @@ namespace DerpySimulation.Entities
             Color = color;
         }
 
-        private void UpdateSpin(float delta)
+        public static void UpdateSpin(float delta)
         {
-            float rotX = (delta * ROTATION_SPEEDX) + PR.Rotation.Pitch;
+            float rotX = (delta * ROTATION_SPEEDX) + _globalRotation.Pitch;
             rotX %= 360;
-            float rotY = (delta * ROTATION_SPEEDY) + PR.Rotation.Yaw;
+            float rotY = (delta * ROTATION_SPEEDY) + _globalRotation.Yaw;
             rotY %= 360;
-            PR.Rotation.Set(rotY, rotX, 0f);
+            _globalRotation.Set(rotY, rotX, 0f);
         }
         private float UpdateBounce(float delta)
         {
@@ -50,10 +53,9 @@ namespace DerpySimulation.Entities
         }
         public void UpdateVisual(float delta)
         {
-            UpdateSpin(delta);
-            float visualOfsY = UpdateBounce(delta);
-
-            UpdateTransform(Vector3.One, new Vector3(0f, visualOfsY, 0f));
+            Vector3 pos = PR.Position;
+            pos.Y += UpdateBounce(delta);
+            UpdateTransform(_globalRotation.Value, Scale, pos);
         }
     }
 }

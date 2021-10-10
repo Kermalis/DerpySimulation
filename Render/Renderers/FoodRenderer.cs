@@ -46,6 +46,7 @@ namespace DerpySimulation.Render.Renderers
 
         public unsafe void UpdateVisuals(GL gl, float delta, List<FoodEntity> food)
         {
+            FoodEntity.UpdateSpin(delta);
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceVBO);
             for (int i = 0; i < food.Count; i++)
             {
