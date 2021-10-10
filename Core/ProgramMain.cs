@@ -20,6 +20,8 @@ namespace DerpySimulation.Core
         public static MainCallbackDelegate Callback = null!; // Initialized in Init()
         public static QuitCallbackDelegate QuitCallback = null!; // Initialized in Init()
 
+        public static bool QuitRequested;
+
         // Initializes the first callback, the window, and instances
         private static void Init()
         {
@@ -39,6 +41,7 @@ namespace DerpySimulation.Core
 
             // Main loop
             DateTime time = DateTime.Now;
+            while (!QuitRequested) // Break if quit was requested by program
             {
                 // Clear per-frame button states
                 Keyboard.Prepare();
