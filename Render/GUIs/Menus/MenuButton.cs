@@ -31,9 +31,9 @@ namespace DerpySimulation.Render.GUIs.Menus
         {
             yield return _background;
             yield return _str;
-            foreach (GUIBlock b in base.GetVisuals())
+            foreach (IGUIVisual v in base.GetVisuals())
             {
-                yield return b;
+                yield return v;
             }
         }
 
