@@ -15,6 +15,11 @@ namespace DerpySimulation.Render
         {
             return (TextureUnit)((int)TextureUnit.Texture0 + unit);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetPixelIndex(uint srcW, int x, int y)
+        {
+            return (int)(x + (y * srcW));
+        }
 
         public static unsafe void LoadTextureFromFile(GL gl, string path)
         {

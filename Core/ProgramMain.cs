@@ -1,8 +1,6 @@
 using DerpySimulation.Input;
 using DerpySimulation.Render;
-using DerpySimulation.Render.Meshes;
-using DerpySimulation.Render.Renderers;
-using DerpySimulation.World;
+using DerpySimulation.Render.GUIs.Menus;
 using SDL2;
 using Silk.NET.OpenGL;
 using System;
@@ -26,13 +24,12 @@ namespace DerpySimulation.Core
         private static void Init()
         {
             Display.Init();
+            GL gl = Display.OpenGL; // Get gl after display is created
 
-            GL gl = Display.OpenGL;
-            _ = new LightController(); // Init instance of LightController
-            _ = new FoodRenderer(gl); // Init instance of FoodRenderer
+            RenderManager.Init(gl); // Init shader/renderer/mesh instances and their resize callbacks
 
-            // Initial callback for now is already the simulation
-            Simulation.Debug_CreateSimulation(gl);
+            // Initial callback
+            _ = new TestMenu(gl);
         }
         // Entry point of the program and main loop
         private static void Main()
@@ -86,9 +83,8 @@ namespace DerpySimulation.Core
             GL gl = Display.OpenGL;
             QuitCallback(gl);
 
-            FoodRenderer.Instance.Delete(gl);
+            RenderManager.Quit(gl);
 
-            AssimpLoader.Quit();
             Display.Quit();
         }
 

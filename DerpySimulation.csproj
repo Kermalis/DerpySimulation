@@ -22,7 +22,7 @@
 	</PropertyGroup>
 
 	<!--Debug defines-->
-	<!--DEBUG_WIREFRAME;DEBUG_TEST_SUN;DEBUG_WIREFRAME-->
+	<!--DEBUG_TEST_SUN;DEBUG_WIREFRAME-->
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
 		<DefineConstants>$(DefineConstants)</DefineConstants>
 	</PropertyGroup>
@@ -36,6 +36,7 @@
 		<Content Include="Assets\**\*.*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<PackageReference Include="EndianBinaryIO" Version="1.1.2" />
 		<PackageReference Include="Silk.NET.Assimp" Version="2.9.0" />
 		<PackageReference Include="Silk.NET.OpenGL" Version="2.9.0" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
