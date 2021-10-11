@@ -2,12 +2,14 @@
 using DerpySimulation.Render.GUIs.Fonts;
 using DerpySimulation.Render.GUIs.Positioning;
 using DerpySimulation.Render.Renderers;
+using DerpySimulation.Render.Shaders;
 using DerpySimulation.World;
 using Silk.NET.OpenGL;
+using System.Collections.Generic;
 
 namespace DerpySimulation.Render.GUIs.Menus
 {
-    internal sealed class TestMenu : GUIComponent
+    internal sealed class TestMenu : GUIComponent, IGUIVisual
     {
         private const float BUTTONS_RELX = 0.075f;
         private const float BUTTONS_RELY_START = 0.4f;
@@ -61,6 +63,20 @@ namespace DerpySimulation.Render.GUIs.Menus
         protected override void Update(GL gl, float delta)
         {
             //
+        }
+
+        public void Render(GL gl, float delta)
+        {
+            StarNestShader.Instance.Render(gl, delta); // It will set the program itself
+        }
+
+        protected override IEnumerable<IGUIVisual> GetVisuals()
+        {
+            yield return this;
+            foreach (IGUIVisual v in base.GetVisuals())
+            {
+                yield return v;
+            }
         }
     }
 }

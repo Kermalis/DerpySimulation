@@ -13,6 +13,7 @@ namespace DerpySimulation.Render
             // Init shader instances
             _ = new FontShader(gl);
             _ = new GUIShader(gl);
+            _ = new StarNestShader(gl);
 
             // Init other instances
             _ = new SimpleRectMesh(gl);
@@ -22,7 +23,7 @@ namespace DerpySimulation.Render
             _ = new LightController();
 
             // Set screen size
-            FontShader.Instance.Static_SetScreenSize(gl);
+            Display_Resized();
 
             // Set resize callback
             Display.Resized += Display_Resized;
@@ -32,12 +33,14 @@ namespace DerpySimulation.Render
         {
             GL gl = Display.OpenGL;
             FontShader.Instance.Static_SetScreenSize(gl);
+            StarNestShader.Instance.Static_SetScreenSize(gl);
         }
 
         public static void Quit(GL gl)
         {
             FontShader.Instance.Delete(gl);
             GUIShader.Instance.Delete(gl);
+            StarNestShader.Instance.Delete(gl);
 
             SimpleRectMesh.Instance.Delete(gl);
             Font.Instance.Delete(gl);
