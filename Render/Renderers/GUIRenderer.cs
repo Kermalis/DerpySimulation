@@ -7,7 +7,7 @@ namespace DerpySimulation.Render.Renderers
 {
     internal sealed class GUIRenderer
     {
-        public static GUIRenderer Instance { get; private set; } = null!; // Initialized in ProgramMain
+        public static GUIRenderer Instance { get; private set; } = null!; // Initialized in RenderManager
 
         public GUIComponent? TopComponent;
 

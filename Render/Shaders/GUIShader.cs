@@ -7,7 +7,7 @@ namespace DerpySimulation.Render.Shaders
         private const string VERTEX_SHADER_PATH = @"Shaders\GUI.vert.glsl";
         private const string FRAGMENT_SHADER_PATH = @"Shaders\GUI.frag.glsl";
 
-        public static GUIShader Instance { get; private set; } = null!; // Initialized in ShaderManager
+        public static GUIShader Instance { get; private set; } = null!; // Initialized in RenderManager
 
         public readonly int LRelPos;
         public readonly int LRelSize;

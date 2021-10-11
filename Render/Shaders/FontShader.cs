@@ -8,7 +8,7 @@ namespace DerpySimulation.Render.Shaders
         private const string VERTEX_SHADER_PATH = @"Shaders\Font.vert.glsl";
         private const string FRAGMENT_SHADER_PATH = @"Shaders\Font.frag.glsl";
 
-        public static FontShader Instance { get; private set; } = null!; // Initialized in ShaderManager
+        public static FontShader Instance { get; private set; } = null!; // Initialized in RenderManager
 
         private readonly int _lFontTexture;
         private readonly int _lRelPos;

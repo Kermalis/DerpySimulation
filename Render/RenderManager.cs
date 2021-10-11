@@ -1,5 +1,4 @@
-﻿using DerpySimulation.Render.GUIs;
-using DerpySimulation.Render.GUIs.Fonts;
+﻿using DerpySimulation.Render.GUIs.Fonts;
 using DerpySimulation.Render.Meshes;
 using DerpySimulation.Render.Renderers;
 using DerpySimulation.Render.Shaders;
@@ -16,6 +15,7 @@ namespace DerpySimulation.Render
             _ = new GUIShader(gl);
 
             // Init other instances
+            _ = new SimpleRectMesh(gl);
             _ = new GUIRenderer();
             Font.Init(gl);
             _ = new FoodRenderer(gl);
@@ -39,7 +39,7 @@ namespace DerpySimulation.Render
             FontShader.Instance.Delete(gl);
             GUIShader.Instance.Delete(gl);
 
-            GUIBlock.Quit(gl);
+            SimpleRectMesh.Instance.Delete(gl);
             Font.Instance.Delete(gl);
             FoodRenderer.Instance.Delete(gl);
 

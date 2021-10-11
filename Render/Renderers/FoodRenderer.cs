@@ -12,7 +12,7 @@ namespace DerpySimulation.Render.Renderers
     {
         private const string MODEL_PATH = @"Models\Food.obj";
 
-        public static FoodRenderer Instance { get; private set; } = null!; // Initialized in ProgramMain
+        public static FoodRenderer Instance { get; private set; } = null!; // Initialized in RenderManager
 
         private readonly FoodShader _shader;
         private readonly Model _model;

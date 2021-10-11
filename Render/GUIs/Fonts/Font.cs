@@ -14,7 +14,7 @@ namespace DerpySimulation.Render.GUIs.Fonts
         private const int TOLERANCE_X = 1;
         private const int TOLERANCE_Y = 1;
 
-        public static Font Instance { get; private set; } = null!; // Set in Init()
+        public static Font Instance { get; private set; } = null!; // Initialized in RenderManager
 
         public readonly byte FontHeight;
         public readonly uint Texture;
