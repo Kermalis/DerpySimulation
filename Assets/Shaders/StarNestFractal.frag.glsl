@@ -17,6 +17,11 @@ const float DARKMATTER = 0.0001;
 const float DIST_FADING = 0.825;
 const float SATURATION = 0.95;
 
+const float NO_AMT = -1;
+const float STEP_R_AMOUNT = 2;
+const float STEP_G_AMOUNT = NO_AMT;
+const float STEP_B_AMOUNT = 0.5;
+
 out vec4 out_color;
 
 uniform uvec2 screenSize;
@@ -28,6 +33,14 @@ mat2 makeRotMatrix(float v)
     float c = cos(v);
     float s = sin(v);
     return mat2(c, s, -s, c);
+}
+float getStepColor(float v, float amt)
+{
+    return amt == NO_AMT ? 0 : pow(v, amt);
+}
+vec3 getStepColor(float v)
+{
+    return vec3(getStepColor(v, STEP_R_AMOUNT), getStepColor(v, STEP_G_AMOUNT), getStepColor(v, STEP_B_AMOUNT));
 }
 
 void main()
@@ -42,7 +55,7 @@ void main()
     mat2 rot = makeRotMatrix(0.3);
     dir.xz *= rot;
     from.xz *= rot;
-    rot = makeRotMatrix(0.8);
+    rot = makeRotMatrix(0.95);
     dir.xy *= rot;
     from.xy *= rot;
 
@@ -68,7 +81,7 @@ void main()
             curFade *= 1 - dm;
         }
         v += curFade;
-        v += vec3(s * s * s, 0, s) * a * BRIGHTNESS * curFade; // Create a red/blue color
+        v += getStepColor(s) * a * BRIGHTNESS * curFade;
         curFade *= DIST_FADING;
         s += VOLUMETRIC_STEP_SIZE;
     }
