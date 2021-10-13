@@ -1,5 +1,5 @@
-﻿// Star Nest by Pablo Roman Andrioli
-// This content is under the MIT License
+﻿// Modified version of "Star Nest" by Pablo Roman Andrioli
+// Original content is under the MIT License
 #version 330 core
 
 const int NUM_ITERATIONS = 15;

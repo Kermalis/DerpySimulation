@@ -37,19 +37,9 @@ namespace DerpySimulation.Entities
         }
         private float UpdateBounce(float delta)
         {
-            _bounceProgress = (delta * BOUNCE_SPEED) + _bounceProgress;
-            float use;
-            if (_bounceProgress > 1f)
-            {
-                _bounceProgress = 0f;
-                use = 1f;
-            }
-            else
-            {
-                use = _bounceProgress;
-            }
-
-            return (Easing.BellCurve2(use) * BOUNCE_HEIGHT) + BASE_VISUAL_Y;
+            _bounceProgress += delta * BOUNCE_SPEED;
+            _bounceProgress %= 1; // Clamp to 0-1
+            return (Easing.BellCurve2(_bounceProgress) * BOUNCE_HEIGHT) + BASE_VISUAL_Y;
         }
         public void UpdateVisual(float delta)
         {

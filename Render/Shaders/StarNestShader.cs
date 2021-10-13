@@ -9,7 +9,7 @@ namespace DerpySimulation.Render.Shaders
     {
         private const string VERTEX_SHADER_PATH = @"Shaders\EntireScreen.vert.glsl";
         private const string FRAGMENT_SHADER_PATH = @"Shaders\StarNestFractal.frag.glsl";
-        private const float MAX_TIME = 50_000; // Try to stick with opengl's precision
+        private const float MAX_TIME = 50_000; // Stay within OpenGL's precision
 
         public static StarNestShader Instance { get; private set; } = null!; // Initialized in RenderManager
 
