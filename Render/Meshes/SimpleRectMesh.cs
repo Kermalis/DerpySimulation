@@ -37,8 +37,6 @@ namespace DerpySimulation.Render.Meshes
 
             gl.EnableVertexAttribArray(0);
             gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, sizeOfVec2, (void*)0);
-
-            gl.BindVertexArray(0);
         }
 
         public void Render(GL gl)
@@ -46,8 +44,6 @@ namespace DerpySimulation.Render.Meshes
             gl.BindVertexArray(_vao);
 
             gl.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
-
-            gl.BindVertexArray(0);
         }
 
         public void Delete(GL gl)

@@ -34,7 +34,6 @@ namespace DerpySimulation.Render.Shaders
         {
             Use(gl);
             gl.Uniform2(_lScreenSize, Display.CurrentWidth, Display.CurrentHeight);
-            gl.UseProgram(0);
         }
 
         public void Render(GL gl, float delta)
@@ -44,8 +43,6 @@ namespace DerpySimulation.Render.Shaders
             gl.Uniform1(_lDisplayTime, _time);
 
             SimpleRectMesh.Instance.Render(gl);
-
-            gl.UseProgram(0);
         }
     }
 }

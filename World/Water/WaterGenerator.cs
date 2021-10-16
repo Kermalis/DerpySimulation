@@ -49,8 +49,6 @@ namespace DerpySimulation.World.Water
             gl.EnableVertexAttribArray(2);
             gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Byte, false, VBOData_Water.SizeOf, (void*)VBOData_Water.OffsetOfPartnerVertex2);
 
-            gl.BindVertexArray(0);
-
             return new Mesh(vao, numVertices, true, vbo);
         }
 

@@ -38,10 +38,19 @@ namespace DerpySimulation.Core
             tmp = (ulong)state * 0x12FAD5C9;
             state = (uint)((tmp >> 32) ^ tmp);
         }
-        /// <summary>Gets a random value between 0 and 1 using <see cref="LehmerRandomizer"/></summary>
+        /// <summary>Gets a random value between 0 (inclusive) and 1 (inclusive) using <see cref="LehmerRandomizer"/>.</summary>
         public static float LehmerRandomizerFloat(ref uint state)
         {
             LehmerRandomizer(ref state);
+            return (float)state / uint.MaxValue;
+        }
+        /// <summary>Gets a random value between 0 (inclusive) and 1 (exclusive) using <see cref="LehmerRandomizer"/>.</summary>
+        public static float LehmerRandomizerFloatNo1(ref uint state)
+        {
+            do
+            {
+                LehmerRandomizer(ref state);
+            } while (state == uint.MaxValue);
             return (float)state / uint.MaxValue;
         }
         public static Vector3 RandomVector3(ref uint state)

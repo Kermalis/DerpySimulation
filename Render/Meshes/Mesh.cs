@@ -29,8 +29,6 @@ namespace DerpySimulation.Render.Meshes
             {
                 gl.DrawElements(PrimitiveType.Triangles, _count, DrawElementsType.UnsignedInt, null);
             }
-
-            gl.BindVertexArray(0);
         }
         public unsafe void RenderInstanced(GL gl, uint numInstances)
         {
@@ -44,8 +42,6 @@ namespace DerpySimulation.Render.Meshes
             {
                 gl.DrawElementsInstanced(PrimitiveType.Triangles, _count, DrawElementsType.UnsignedInt, null, numInstances);
             }
-
-            gl.BindVertexArray(0);
         }
 
         public void Delete(GL gl)

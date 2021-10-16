@@ -1,5 +1,4 @@
 ﻿using DerpySimulation.Core;
-using DerpySimulation.Render;
 using DerpySimulation.Render.Data;
 using System.Numerics;
 
@@ -13,11 +12,11 @@ namespace DerpySimulation.World.Terrain
         private readonly int _lastZIndex;
         // 0 - Top Left, 1 - Bottom Left, 2 - Top Right, 3 - Bottom Right
         private readonly Vector3[] _positions;
-        private readonly Color3[] _colors;
+        private readonly Vector3[] _colors;
         private readonly Vector3 _normalLeft;
         private readonly Vector3 _normalRight;
 
-        public GridDataBuilder(int x, int z, float[,] gridHeights, Color3[,] gridColors)
+        public GridDataBuilder(int x, int z, float[,] gridHeights, Vector3[,] gridColors)
         {
             _positions = CalcCornerPositions(x, z, gridHeights);
             _colors = CalcCornerColors(x, z, gridColors);
@@ -30,9 +29,9 @@ namespace DerpySimulation.World.Terrain
             _normalRight = Utils.CalcNormal(_positions[2], _positions[rightHanded ? 0 : 1], _positions[3]);
         }
 
-        private static Color3[] CalcCornerColors(int x, int z, Color3[,] gridColors)
+        private static Vector3[] CalcCornerColors(int x, int z, Vector3[,] gridColors)
         {
-            var cornerCols = new Color3[4];
+            var cornerCols = new Vector3[4];
             cornerCols[0] = gridColors[x, z];
             cornerCols[1] = gridColors[x, z + 1];
             cornerCols[2] = gridColors[x + 1, z];

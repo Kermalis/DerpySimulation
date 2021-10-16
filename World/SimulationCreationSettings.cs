@@ -8,7 +8,7 @@ namespace DerpySimulation.World
         public float WaterLevel;
         public uint SizeX;
         public uint SizeZ;
-        public ColorStep[] Colors;
+        public ColorStep[] ColorSteps;
 
         public float HeightGenAmplitude;
         public int HeightGenNumOctaves;
@@ -32,18 +32,18 @@ namespace DerpySimulation.World
                     settings.HeightGenRoughness = 0.5f;
                     settings.HeightGenSeed = null;
 
-                    settings.Colors = new ColorStep[]
+                    settings.ColorSteps = new ColorStep[]
                     {
-                        new(-100, Color3.FromRGB( 50,  50, 130)), // Deep ocean
-                        new(- 80, Color3.FromRGB( 50,  50, 180)), // Ocean
-                        new(- 10, Color3.FromRGB(100, 100, 110)), // Gravelly ocean
-                        new(   0, Color3.FromRGB(180, 175, 120)), // Sandy
-                        new(   2, Color3.FromRGB( 80, 170, 120)), // Grass
-                        new(  40, Color3.FromRGB( 80, 190, 120)), // Grass brighter
-                        new(  50, Color3.FromRGB(100, 100, 100)), // Grayish mountain
-                        new(  70, Color3.FromRGB(120, 120, 120)), // Brighter gray
-                        new(  85, Color3.FromRGB(220, 210, 200)), // Redish peak (almost white)
-                        new(  90, Color3.FromRGB(205, 235, 255)), // White peaks
+                        new(-100, Colors.FromRGB( 50,  50, 130)), // Deep ocean
+                        new(- 80, Colors.FromRGB( 50,  50, 180)), // Ocean
+                        new(- 10, Colors.FromRGB(100, 100, 110)), // Gravelly ocean
+                        new(   0, Colors.FromRGB(180, 175, 120)), // Sandy
+                        new(   2, Colors.FromRGB( 80, 170, 120)), // Grass
+                        new(  40, Colors.FromRGB( 80, 190, 120)), // Grass brighter
+                        new(  50, Colors.FromRGB(100, 100, 100)), // Grayish mountain
+                        new(  70, Colors.FromRGB(120, 120, 120)), // Brighter gray
+                        new(  85, Colors.FromRGB(220, 210, 200)), // Redish peak (almost white)
+                        new(  90, Colors.FromRGB(205, 235, 255)), // White peaks
                     };
 
                     return settings;
@@ -61,18 +61,18 @@ namespace DerpySimulation.World
                     settings.HeightGenRoughness = 0.5f;
                     settings.HeightGenSeed = null;
 
-                    settings.Colors = new ColorStep[]
+                    settings.ColorSteps = new ColorStep[]
                     {
-                        new(-500, Color3.FromRGB( 50,  50, 130)), // Deep ocean
-                        new(-420, Color3.FromRGB( 50,  50, 180)), // Ocean
-                        new(- 50, Color3.FromRGB(100, 100, 110)), // Gravelly ocean
-                        new(   0, Color3.FromRGB(180, 175, 120)), // Sandy
-                        new(  25, Color3.FromRGB( 80, 170, 120)), // Grass
-                        new( 140, Color3.FromRGB( 80, 190, 120)), // Grass brighter
-                        new( 190, Color3.FromRGB(100, 100, 100)), // Grayish mountain
-                        new( 250, Color3.FromRGB(120, 120, 120)), // Brighter gray
-                        new( 285, Color3.FromRGB(220, 210, 200)), // Redish peak (almost white)
-                        new( 300, Color3.FromRGB(205, 235, 255)), // White peaks
+                        new(-500, Colors.FromRGB( 50,  50, 130)), // Deep ocean
+                        new(-420, Colors.FromRGB( 50,  50, 180)), // Ocean
+                        new(- 50, Colors.FromRGB(100, 100, 110)), // Gravelly ocean
+                        new(   0, Colors.FromRGB(180, 175, 120)), // Sandy
+                        new(  25, Colors.FromRGB( 80, 170, 120)), // Grass
+                        new( 140, Colors.FromRGB( 80, 190, 120)), // Grass brighter
+                        new( 190, Colors.FromRGB(100, 100, 100)), // Grayish mountain
+                        new( 250, Colors.FromRGB(120, 120, 120)), // Brighter gray
+                        new( 285, Colors.FromRGB(220, 210, 200)), // Redish peak (almost white)
+                        new( 300, Colors.FromRGB(205, 235, 255)), // White peaks
                     };
 
                     return settings;
@@ -90,18 +90,18 @@ namespace DerpySimulation.World
                     settings.HeightGenRoughness = 0.425f;
                     settings.HeightGenSeed = null;
 
-                    settings.Colors = new ColorStep[]
+                    settings.ColorSteps = new ColorStep[]
                     {
-                        new(-300, Color3.FromRGB( 50,  50, 130)), // Deep ocean
-                        new(-220, Color3.FromRGB( 50,  50, 180)), // Ocean
-                        new(- 50, Color3.FromRGB(100, 100, 110)), // Gravelly ocean
-                        new(   0, Color3.FromRGB(180, 175, 120)), // Sandy
-                        new(  15, Color3.FromRGB( 80, 170, 120)), // Grass
-                        new( 110, Color3.FromRGB( 80, 190, 120)), // Grass brighter
-                        new( 175, Color3.FromRGB(100, 100, 100)), // Grayish mountain
-                        new( 200, Color3.FromRGB(120, 120, 120)), // Brighter gray
-                        new( 225, Color3.FromRGB(220, 210, 200)), // Redish peak (almost white)
-                        new( 250, Color3.FromRGB(205, 235, 255)), // White peaks
+                        new(-300, Colors.FromRGB( 50,  50, 130)), // Deep ocean
+                        new(-220, Colors.FromRGB( 50,  50, 180)), // Ocean
+                        new(- 50, Colors.FromRGB(100, 100, 110)), // Gravelly ocean
+                        new(   0, Colors.FromRGB(180, 175, 120)), // Sandy
+                        new(  15, Colors.FromRGB( 80, 170, 120)), // Grass
+                        new( 110, Colors.FromRGB( 80, 190, 120)), // Grass brighter
+                        new( 175, Colors.FromRGB(100, 100, 100)), // Grayish mountain
+                        new( 200, Colors.FromRGB(120, 120, 120)), // Brighter gray
+                        new( 225, Colors.FromRGB(220, 210, 200)), // Redish peak (almost white)
+                        new( 250, Colors.FromRGB(205, 235, 255)), // White peaks
                     };
 
                     return settings;

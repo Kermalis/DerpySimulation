@@ -34,26 +34,24 @@ namespace DerpySimulation.Render.Shaders
             // Set texture unit now
             Use(gl);
             gl.Uniform1(_lFontTexture, 0);
-            gl.UseProgram(0);
         }
 
         public void Static_SetScreenSize(GL gl)
         {
             Use(gl);
             gl.Uniform2(_lScreenSize, Display.CurrentWidth, Display.CurrentHeight);
-            gl.UseProgram(0);
         }
 
         public void SetTranslation(GL gl, Vector2 v)
         {
             gl.Uniform2(_lRelPos, ref v);
         }
-        public void SetColors(GL gl, Color4[] colors)
+        public void SetColors(GL gl, Vector4[] colors)
         {
             gl.Uniform1(_lNumFontColors, (uint)colors.Length);
             for (int i = 0; i < colors.Length; i++)
             {
-                Color4.PutInShader(gl, _lFontColors[i], colors[i]);
+                Colors.PutInShader(gl, _lFontColors[i], colors[i]);
             }
         }
     }

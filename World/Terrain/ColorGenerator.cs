@@ -1,14 +1,14 @@
-﻿using DerpySimulation.Render;
-using System;
+﻿using System;
+using System.Numerics;
 
 namespace DerpySimulation.World.Terrain
 {
     internal static class ColorGenerator
     {
         /// <summary>Calculates the color for every vertex of the terrain by linearly interpolating between the colors depending on the vertex's height.</summary>
-        public static Color3[,] GenerateColors(ColorStep[] colors, float[,] gridHeights)
+        public static Vector3[,] GenerateColors(ColorStep[] colors, float[,] gridHeights)
         {
-            var gridColors = new Color3[gridHeights.GetLength(0), gridHeights.GetLength(1)];
+            var gridColors = new Vector3[gridHeights.GetLength(0), gridHeights.GetLength(1)];
             for (int z = 0; z < gridHeights.GetLength(1); z++)
             {
                 for (int x = 0; x < gridHeights.GetLength(0); x++)
@@ -20,7 +20,7 @@ namespace DerpySimulation.World.Terrain
         }
 
         /// <summary>Determines the color of the vertex based on the provided height.</summary>
-        private static Color3 CalcColor(ColorStep[] colors, float height)
+        private static Vector3 CalcColor(ColorStep[] colors, float height)
         {
             // If height is not in the table, return the lowest color
             if (colors[0].Height > height)
@@ -28,7 +28,7 @@ namespace DerpySimulation.World.Terrain
                 return colors[0].Color;
             }
             int firstColorIdx = GetColorIdxForHeight(colors, height);
-            Color3 firstColor = colors[firstColorIdx].Color;
+            Vector3 firstColor = colors[firstColorIdx].Color;
             float firstColorHeight = colors[firstColorIdx].Height;
             // If it's the last color, should rarely happen
             // Or if there should be no blending
@@ -39,13 +39,13 @@ namespace DerpySimulation.World.Terrain
 
             // From now on we assume there is a next color
             int nextColorIdx = firstColorIdx + 1;
-            Color3 nextColor = colors[nextColorIdx].Color;
+            Vector3 nextColor = colors[nextColorIdx].Color;
             float nextColorHeight = colors[nextColorIdx].Height;
 
             float newHeight = height - firstColorHeight;
             float heightDifference = nextColorHeight - firstColorHeight; // The amount between the two heights
             float nextColorAmt = newHeight / heightDifference; // Convert newHeight to a value between 0 and 1 exclusive
-            return Color3.Lerp(firstColor, nextColor, nextColorAmt);
+            return Vector3.Lerp(firstColor, nextColor, nextColorAmt);
         }
 
         private static int GetColorIdxForHeight(ColorStep[] colors, float height)

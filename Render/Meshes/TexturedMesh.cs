@@ -35,13 +35,11 @@ namespace DerpySimulation.Render.Meshes
         {
             BeginRender(gl, shader);
             _mesh.Render(gl);
-            EndRender(gl);
         }
         public void RenderInstanced(GL gl, GLShader shader, uint numInstances)
         {
             BeginRender(gl, shader);
             _mesh.RenderInstanced(gl, numInstances);
-            EndRender(gl);
         }
         private void BeginRender(GL gl, GLShader shader)
         {
@@ -57,15 +55,6 @@ namespace DerpySimulation.Render.Meshes
 
                 gl.ActiveTexture(i.ToTextureUnit());
                 gl.BindTexture(TextureTarget.Texture2D, _textures[i].Name);
-            }
-        }
-        private void EndRender(GL gl)
-        {
-            // Deactivate all textures
-            for (int i = 0; i < _textures.Count; i++)
-            {
-                gl.ActiveTexture(i.ToTextureUnit());
-                gl.BindTexture(TextureTarget.Texture2D, 0);
             }
         }
 

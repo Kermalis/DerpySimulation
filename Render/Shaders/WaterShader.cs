@@ -40,12 +40,9 @@ namespace DerpySimulation.Render.Shaders
             _lightUniforms = new LitShaderUniforms(gl, this);
 
             Use(gl);
-
             gl.Uniform1(_lReflectionTexture, 0);
             gl.Uniform1(_lRefractionTexture, 1);
             gl.Uniform1(_lDepthTexture, 2);
-
-            gl.UseProgram(0);
         }
 
         public void SetCamera(GL gl, Camera c)

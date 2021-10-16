@@ -2,12 +2,13 @@
 using DerpySimulation.Render.GUIs.Positioning;
 using Silk.NET.OpenGL;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace DerpySimulation.Render.GUIs.Menus
 {
     internal sealed class MenuButton : GUIButton
     {
-        private static readonly Color4 TEMP_COLOR = new(Colors.Red, 1f);
+        private static readonly Vector4 TEMP_COLOR = new(Colors.Red, 1f);
 
         private GUIBlock _background = null!; // Set in Init()
         private readonly GUIString _str;

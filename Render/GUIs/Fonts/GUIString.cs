@@ -10,7 +10,7 @@ namespace DerpySimulation.Render.GUIs.Fonts
     {
         public readonly string Str;
         public readonly Font Font;
-        public Color4[] Colors;
+        public Vector4[] Colors;
         public readonly uint Scale;
 
         private uint _vao;
@@ -18,7 +18,7 @@ namespace DerpySimulation.Render.GUIs.Fonts
         private uint _ebo;
         private uint _totalVisible;
 
-        public GUIString(string str, Font font, Color4[] colors, uint scale = 1)
+        public GUIString(string str, Font font, Vector4[] colors, uint scale = 1)
         {
             Str = str;
             Font = font;
@@ -90,8 +90,6 @@ namespace DerpySimulation.Render.GUIs.Fonts
             gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, VBOData_Font.SizeOf, (void*)VBOData_Font.OffsetOfPos);
             gl.EnableVertexAttribArray(1);
             gl.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, VBOData_Font.SizeOf, (void*)VBOData_Font.OffsetOfUV);
-
-            gl.BindVertexArray(0);
         }
 
         protected override void Update(GL gl, float delta)
@@ -126,10 +124,6 @@ namespace DerpySimulation.Render.GUIs.Fonts
             shader.SetColors(gl, Colors);
 
             gl.DrawElements(PrimitiveType.Triangles, _totalVisible * 6, DrawElementsType.UnsignedInt, (void*)0);
-
-            gl.UseProgram(0);
-            gl.BindTexture(TextureTarget.Texture2D, 0);
-            gl.BindVertexArray(0);
         }
 
         protected override void Delete(GL gl)

@@ -19,8 +19,6 @@ namespace DerpySimulation.Render
             _ = new SimpleRectMesh(gl);
             _ = new GUIRenderer();
             Font.Init(gl);
-            _ = new FoodRenderer(gl);
-            _ = new LightController();
 
             // Set screen size
             Display_Resized();
@@ -44,7 +42,6 @@ namespace DerpySimulation.Render
 
             SimpleRectMesh.Instance.Delete(gl);
             Font.Instance.Delete(gl);
-            FoodRenderer.Instance.Delete(gl);
 
             AssimpLoader.Quit();
         }

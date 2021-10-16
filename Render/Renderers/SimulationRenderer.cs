@@ -1,9 +1,7 @@
-﻿using DerpySimulation.Entities;
-using DerpySimulation.Render.Cameras;
+﻿using DerpySimulation.Render.Cameras;
 using DerpySimulation.World.Terrain;
 using DerpySimulation.World.Water;
 using Silk.NET.OpenGL;
-using System.Collections.Generic;
 using System.Numerics;
 
 namespace DerpySimulation.Render.Renderers
@@ -34,7 +32,7 @@ namespace DerpySimulation.Render.Renderers
             Display.Resized += ProgramMain_Resized;
         }
 
-        // On window resize, recreate water fbos
+        // On window resize; recreate water fbos
         private void ProgramMain_Resized()
         {
             _mustCreateFBOs = true;
@@ -47,8 +45,7 @@ namespace DerpySimulation.Render.Renderers
             _refractionFBO = RenderUtils.CreateRefractionFBO(gl, width, height, out _refractionTexture, out _depthTexture);
         }
 
-        // TODO: Including food seems a bit of a hack; there should be a centralized way of rendering everything affected by water
-        public void Render(GL gl, Camera cam, TerrainTile terrain, WaterTile water, List<FoodEntity> food)
+        public void Render(GL gl, Camera cam, TerrainTile terrain, WaterTile water)
         {
             if (_mustCreateFBOs)
             {
@@ -65,11 +62,11 @@ namespace DerpySimulation.Render.Renderers
             if (aboveWater)
             {
                 gl.Enable(EnableCap.ClipDistance0);
-                ReflectionPass(gl, cam, terrain, food, water.Y);
-                RefractionPass(gl, cam, terrain, food, water.Y);
+                ReflectionPass(gl, cam, terrain, water.Y);
+                RefractionPass(gl, cam, terrain, water.Y);
                 gl.Disable(EnableCap.ClipDistance0);
             }
-            MainPass(gl, cam, terrain, water, food, aboveWater);
+            MainPass(gl, cam, terrain, water, aboveWater);
 #if DEBUG_WIREFRAME
             gl.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill); // Reset
 #endif
@@ -86,43 +83,46 @@ namespace DerpySimulation.Render.Renderers
             gl.ClearColor(0f, 0f, 0f, 1f); // Black
             gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         }
-        private void ReflectionPass(GL gl, Camera cam, TerrainTile terrain, List<FoodEntity> food, float waterY)
+        private void ReflectionPass(GL gl, Camera cam, TerrainTile terrain, float waterY)
         {
             RenderUtils.BindFBO(gl, _reflectionFBO, DrawBufferMode.ColorAttachment0, Display.CurrentWidth, Display.CurrentHeight);
             PreparePass(gl);
             Matrix4x4 projectionView = cam.CreateReflectionViewMatrix(waterY) * cam.Projection;
             var clippingPlane = new Vector4(0, 1, 0, -waterY + REFLECT_OFFSET);
 
-            _terrainRenderer.Render(gl, terrain, projectionView, clippingPlane);
-            FoodRenderer.Instance.Render(gl, food, projectionView, cam.PR.Position, clippingPlane);
+            RenderLandStuff(gl, terrain, cam.PR.Position, projectionView, clippingPlane);
 
             RenderUtils.UnbindFBO(gl);
         }
-        private void RefractionPass(GL gl, Camera cam, TerrainTile terrain, List<FoodEntity> food, float waterY)
+        private void RefractionPass(GL gl, Camera cam, TerrainTile terrain, float waterY)
         {
             RenderUtils.BindFBO(gl, _refractionFBO, DrawBufferMode.ColorAttachment0, Display.CurrentWidth, Display.CurrentHeight);
             PreparePass(gl);
             Matrix4x4 projectionView = cam.CreateViewMatrix() * cam.Projection;
             var clippingPlane = new Vector4(0, -1, 0, waterY + REFRACT_OFFSET);
 
-            _terrainRenderer.Render(gl, terrain, projectionView, clippingPlane);
-            FoodRenderer.Instance.Render(gl, food, projectionView, cam.PR.Position, clippingPlane);
+            RenderLandStuff(gl, terrain, cam.PR.Position, projectionView, clippingPlane);
 
             RenderUtils.UnbindFBO(gl);
         }
-        private void MainPass(GL gl, Camera cam, TerrainTile terrain, WaterTile water, List<FoodEntity> food, bool aboveWater)
+        private void MainPass(GL gl, Camera cam, TerrainTile terrain, WaterTile water, bool aboveWater)
         {
             PreparePass(gl);
             Matrix4x4 projectionView = cam.CreateViewMatrix() * cam.Projection;
             Vector4 clippingPlane = Vector4.Zero;
 
-            _terrainRenderer.Render(gl, terrain, projectionView, clippingPlane);
-            FoodRenderer.Instance.Render(gl, food, projectionView, cam.PR.Position, clippingPlane);
+            RenderLandStuff(gl, terrain, cam.PR.Position, projectionView, clippingPlane);
 
             if (aboveWater)
             {
                 _waterRenderer.Render(gl, water, cam, _reflectionTexture, _refractionTexture, _depthTexture);
             }
+        }
+
+        private void RenderLandStuff(GL gl, TerrainTile terrain, in Vector3 camPos, in Matrix4x4 projectionView, in Vector4 clippingPlane)
+        {
+            _terrainRenderer.Render(gl, terrain, projectionView, clippingPlane);
+            FoodRenderer.Instance.Render(gl, projectionView, camPos, clippingPlane);
         }
 
         public void Delete(GL gl)

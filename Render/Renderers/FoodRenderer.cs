@@ -3,6 +3,7 @@ using DerpySimulation.Render.Data;
 using DerpySimulation.Render.Meshes;
 using DerpySimulation.Render.Shaders;
 using Silk.NET.OpenGL;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -12,16 +13,16 @@ namespace DerpySimulation.Render.Renderers
     {
         private const string MODEL_PATH = @"Models\Food.obj";
 
-        public static FoodRenderer Instance { get; private set; } = null!; // Initialized in RenderManager
+        public static FoodRenderer Instance { get; private set; } = null!; // Initialized in Init()
 
         private readonly FoodShader _shader;
         private readonly Model _model;
         private readonly uint _instanceVBO;
 
-        public unsafe FoodRenderer(GL gl)
-        {
-            Instance = this;
+        private uint _numToRender;
 
+        private unsafe FoodRenderer(GL gl)
+        {
             _shader = new FoodShader(gl);
             _model = AssimpLoader.ImportModel(gl, MODEL_PATH);
 
@@ -39,14 +40,20 @@ namespace DerpySimulation.Render.Renderers
                 // Transform
                 RenderUtils.AddInstancedAttribute_Matrix4x4(gl, 3, VBOData_InstancedFood.SizeOf, VBOData_InstancedFood.OffsetOfTransform);
             }
-
-            gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
-            gl.BindVertexArray(0);
+        }
+        public static void Init(GL gl)
+        {
+            if (Instance is not null)
+            {
+                throw new InvalidOperationException();
+            }
+            Instance = new FoodRenderer(gl);
         }
 
         public unsafe void UpdateVisuals(GL gl, float delta, List<FoodEntity> food)
         {
             FoodEntity.UpdateSpin(delta);
+            _numToRender = (uint)food.Count;
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceVBO);
             for (int i = 0; i < food.Count; i++)
             {
@@ -55,9 +62,8 @@ namespace DerpySimulation.Render.Renderers
                 var vboData = new VBOData_InstancedFood(f.Color, f.UpdatedTransform);
                 gl.BufferSubData(BufferTargetARB.ArrayBuffer, i * (int)VBOData_InstancedFood.SizeOf, VBOData_InstancedFood.SizeOf, &vboData);
             }
-            gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
         }
-        public void Render(GL gl, List<FoodEntity> food, in Matrix4x4 projectionView, in Vector3 camPos, in Vector4 clippingPlane)
+        public void Render(GL gl, in Matrix4x4 projectionView, in Vector3 camPos, in Vector4 clippingPlane)
         {
             _shader.Use(gl);
 
@@ -66,13 +72,12 @@ namespace DerpySimulation.Render.Renderers
             _shader.SetClippingPlane(gl, clippingPlane);
             _shader.SetLights(gl);
 
-            _model.RenderInstanced(gl, (uint)food.Count);
-
-            gl.UseProgram(0);
+            _model.RenderInstanced(gl, _numToRender);
         }
 
         public void Delete(GL gl)
         {
+            Instance = null!;
             _shader.Delete(gl);
             gl.DeleteBuffer(_instanceVBO);
             _model.Delete(gl);

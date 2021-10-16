@@ -44,7 +44,6 @@ namespace DerpySimulation.Render.Renderers
             tile.Render(gl);
 
             // Done
-            gl.UseProgram(0);
             gl.Disable(EnableCap.Blend);
         }
 

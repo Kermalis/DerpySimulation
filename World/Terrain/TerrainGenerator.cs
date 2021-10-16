@@ -1,5 +1,4 @@
-﻿using DerpySimulation.Render;
-using DerpySimulation.Render.Data;
+﻿using DerpySimulation.Render.Data;
 using DerpySimulation.Render.Meshes;
 using Silk.NET.OpenGL;
 using System.Numerics;
@@ -39,7 +38,7 @@ namespace DerpySimulation.World.Terrain
 #if DEBUG
             Log.WriteLineWithTime("Generating colors...");
 #endif
-            Color3[,] gridColors = ColorGenerator.GenerateColors(settings.Colors, gridHeights);
+            Vector3[,] gridColors = ColorGenerator.GenerateColors(settings.ColorSteps, gridHeights);
 
             // Create terrain
 #if DEBUG
@@ -69,7 +68,7 @@ namespace DerpySimulation.World.Terrain
         }
 
         /// <summary>Creates the vbo vertex data for the GPU.</summary>
-        private static VBOData_PosNormalColor[] CreateMeshData(float[,] gridHeights, Color3[,] gridColors, uint numVertices)
+        private static VBOData_PosNormalColor[] CreateMeshData(float[,] gridHeights, Vector3[,] gridColors, uint numVertices)
         {
             var data = new VBOData_PosNormalColor[numVertices];
             int dataIdx = 0;
@@ -122,8 +121,6 @@ namespace DerpySimulation.World.Terrain
             gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, VBOData_PosNormalColor.SizeOf, (void*)VBOData_PosNormalColor.OffsetOfNormal);
             gl.EnableVertexAttribArray(2);
             gl.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, VBOData_PosNormalColor.SizeOf, (void*)VBOData_PosNormalColor.OffsetOfColor);
-
-            gl.BindVertexArray(0);
 
             return new Mesh(vao, elementCount, false, ebo, vbo);
         }

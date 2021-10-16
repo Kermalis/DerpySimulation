@@ -170,8 +170,6 @@ namespace DerpySimulation.Render.Meshes
             gl.EnableVertexAttribArray(1);
             gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, VBOData_PosNormal.SizeOf, (void*)VBOData_PosNormal.OffsetOfNormal);
 
-            gl.BindVertexArray(0);
-
             return new Mesh(_vao, elementCount, false, ebo, vbo);
         }
         private static TexturedMesh CreateMeshTextured(GL gl, VBOData_PosNormalUV[] vertices, List<uint> indices, List<MeshTexture> textures)
@@ -204,8 +202,6 @@ namespace DerpySimulation.Render.Meshes
             gl.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, VBOData_PosNormalUV.SizeOf, (void*)VBOData_PosNormalUV.OffsetOfNormal);
             gl.EnableVertexAttribArray(2);
             gl.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, VBOData_PosNormalUV.SizeOf, (void*)VBOData_PosNormalUV.OffsetOfUV);
-
-            gl.BindVertexArray(0);
 
             return new TexturedMesh(new Mesh(vao, elementCount, false, ebo, vbo), textures);
         }

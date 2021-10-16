@@ -11,9 +11,9 @@ namespace DerpySimulation.Render.Data
 
         public readonly Vector3 Pos;
         public readonly Vector3 Normal;
-        public readonly Color3 Color;
+        public readonly Vector3 Color;
 
-        public VBOData_PosNormalColor(in Vector3 pos, in Vector3 normal, in Color3 color)
+        public VBOData_PosNormalColor(in Vector3 pos, in Vector3 normal, in Vector3 color)
         {
             Pos = pos;
             Normal = normal;

@@ -9,7 +9,7 @@ namespace DerpySimulation.Render
     {
         public const int MAX_LIGHTS = 4;
 
-        public static LightController Instance { get; private set; } = null!; // Initialized in RenderManager
+        public static LightController Instance { get; private set; } = null!; // Initialized in Init()
 
         public int Count { get; private set; }
         public PointLight Sun { get; }
@@ -27,13 +27,23 @@ namespace DerpySimulation.Render
             }
         }
 
-        public LightController()
+        private LightController()
         {
-            Instance = this;
-
-            Sun = new PointLight(new Vector3(0, 20000, 0), new Color3(1.25f, 1.125f, 1f));
+            Sun = new PointLight(new Vector3(0, 20000, 0), new Vector3(1.25f, 1.125f, 1f));
             Count = 1;
             _nonSunLights = new PointLight[MAX_LIGHTS - 1];
+        }
+        public static void Init()
+        {
+            if (Instance is not null)
+            {
+                throw new InvalidOperationException();
+            }
+            Instance = new LightController();
+        }
+        public static void Delete()
+        {
+            Instance = null!;
         }
 
         public void Add(PointLight light)

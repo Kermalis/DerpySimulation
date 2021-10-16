@@ -23,8 +23,6 @@ namespace DerpySimulation.Render.Renderers
             _terrainShader.SetLights(gl);
 
             tile.Render(gl);
-
-            gl.UseProgram(0);
         }
 
         public void Delete(GL gl)

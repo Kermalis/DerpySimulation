@@ -33,7 +33,10 @@ namespace DerpySimulation.World
 
         public Simulation(GL gl, in SimulationCreationSettings settings)
         {
+            // Load graphics
             _renderer = new SimulationRenderer(gl);
+            FoodRenderer.Init(gl);
+            LightController.Init();
 
             // Create terrain
             _terrain = TerrainGenerator.GenerateTerrain(gl, settings, out Vector3 peak);
@@ -45,9 +48,9 @@ namespace DerpySimulation.World
             _water = WaterGenerator.Generate(gl, settings, _terrain);
 
             // Test add some lights
-            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ - (settings.SizeZ / 4)), new Color3(20f, 0f, 0f), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ / 4), new Color3(0f, 10f, 10f), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(0f, 150f, 0f), new Color3(0f, 0f, 15f), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ - (settings.SizeZ / 4)), new Vector3(20f, 0f, 0f), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ / 4), new Vector3(0f, 10f, 10f), new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new(new Vector3(0f, 150f, 0f), new Vector3(0f, 0f, 15f), new Vector3(1f, 0.01f, 0.002f)));
             // Test add food
             const int num = (int)FoodEntity.MAX_FOOD - 1;
             float f = 2f;
@@ -59,8 +62,8 @@ namespace DerpySimulation.World
             };
             for (int i = 0; i < num; i++)
             {
-                float x = Utils.LehmerRandomizerFloat(ref randState) * settings.SizeX;
-                float z = Utils.LehmerRandomizerFloat(ref randState) * settings.SizeZ;
+                float x = Utils.LehmerRandomizerFloatNo1(ref randState) * settings.SizeX;
+                float z = Utils.LehmerRandomizerFloatNo1(ref randState) * settings.SizeZ;
                 float y = GetHeight(x, z);
                 //float y = 100f;
                 _foodPieces.Add(new FoodEntity(new Vector3(x, y, z), Utils.RandomVector3(ref randState)));
@@ -177,7 +180,7 @@ namespace DerpySimulation.World
         public void Render(GL gl, float delta)
         {
             FoodRenderer.Instance.UpdateVisuals(gl, delta, _foodPieces);
-            _renderer.Render(gl, _camera, _terrain, _water, _foodPieces);
+            _renderer.Render(gl, _camera, _terrain, _water);
         }
 
         public void Delete(GL gl)
@@ -185,6 +188,8 @@ namespace DerpySimulation.World
             _terrain.Delete(gl);
             _water.Delete(gl);
             _renderer.Delete(gl);
+            FoodRenderer.Instance.Delete(gl);
+            LightController.Delete();
         }
     }
 }

@@ -26,7 +26,6 @@ namespace DerpySimulation.Render.Shaders
             // FOR NOW, TRANSFORM IS ALWAYS DEFAULT
             Use(gl);
             Matrix4(gl, _lTransform, Matrix4x4.CreateTranslation(Vector3.Zero));
-            gl.UseProgram(0);
         }
 
         public void SetCamera(GL gl, in Matrix4x4 projectionView)

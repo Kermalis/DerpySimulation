@@ -2,14 +2,15 @@
 using DerpySimulation.Render.Meshes;
 using DerpySimulation.Render.Shaders;
 using Silk.NET.OpenGL;
+using System.Numerics;
 
 namespace DerpySimulation.Render.GUIs
 {
     internal sealed class GUIBlock : GUIComponent, IGUIVisual
     {
-        private readonly Color4 _color;
+        private readonly Vector4 _color;
 
-        public GUIBlock(in Color4 color)
+        public GUIBlock(in Vector4 color)
         {
             _color = color;
         }
@@ -30,11 +31,9 @@ namespace DerpySimulation.Render.GUIs
             ref GUIRect pos = ref RelPos;
             gl.Uniform2(shader.LRelPos, pos.X, pos.Y);
             gl.Uniform2(shader.LRelSize, pos.W, pos.H);
-            Color4.PutInShader(gl, shader.LColor, _color);
+            Colors.PutInShader(gl, shader.LColor, _color);
 
             SimpleRectMesh.Instance.Render(gl);
-
-            gl.UseProgram(0);
         }
     }
 }
