@@ -15,14 +15,10 @@ namespace DerpySimulation.Entities
         {
             UpdateTransform(PR.Rotation.Value, Scale, PR.Position);
         }
-        protected void UpdateTransform(in Vector3 visualScale, in Vector3 visualOffset)
-        {
-            UpdateTransform(PR.Rotation.Value, Scale * visualScale, PR.Position + visualOffset);
-        }
         protected void UpdateTransform(in Quaternion rotation, in Vector3 scale, in Vector3 position)
         {
-            UpdatedTransform = Matrix4x4.CreateFromQuaternion(rotation)
-                * Matrix4x4.CreateScale(scale)
+            UpdatedTransform = Matrix4x4.CreateScale(scale)
+                * Matrix4x4.CreateFromQuaternion(rotation)
                 * Matrix4x4.CreateTranslation(position);
         }
     }
