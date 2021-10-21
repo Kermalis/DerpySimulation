@@ -19,7 +19,7 @@ namespace DerpySimulation.Render.Renderers
 
         public static bool ShouldRenderWater(float camY, float waterY)
         {
-            return camY > waterY + WaterRenderer.WAVE_HEIGHT;
+            return camY > waterY + WAVE_HEIGHT;
         }
         public void Render(GL gl, WaterTile tile, Camera cam, uint reflectionTexture, uint refractionTexture, uint depthTexture)
         {
