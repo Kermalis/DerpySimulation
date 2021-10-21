@@ -79,8 +79,11 @@ namespace DerpySimulation.Render.Renderers
             gl.CullFace(CullFaceMode.Back);
             gl.Enable(EnableCap.Multisample);
             gl.ProvokingVertex(VertexProvokingMode.FirstVertexConvention);
-            //gl.ClearColor(0.49f, 0.89f, 0.98f, 1f); // Sky color
+#if DEBUG_TEST_SUN
             gl.ClearColor(0f, 0f, 0f, 1f); // Black
+#else
+            gl.ClearColor(0.49f, 0.89f, 0.98f, 1f); // Sky color
+#endif
             gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         }
         private void ReflectionPass(GL gl, Camera cam, TerrainTile terrain, float waterY)
