@@ -190,6 +190,31 @@ namespace DerpySimulation.World
                 }
             }
         }
+        private void LogPopulation()
+        {
+            int numAlive = LivingEntity.NumAliveDerps;
+            if (numAlive == _logLastNumDerps)
+            {
+                return;
+            }
+
+            _logLastNumDerps = numAlive;
+            Console.WriteLine("({0})", DateTime.Now.ToLongTimeString());
+            Console.WriteLine("Derps alive: " + numAlive);
+            if (numAlive == 0)
+            {
+                return;
+            }
+
+            IEnumerable<LivingEntity> derps = _entities.OfType<LivingEntity>();
+            int numInWater = derps.Count(d => d.IsUnderwater);
+            int numOnLand = numAlive - numInWater;
+            Console.WriteLine("- Derps on land: {0} ({1:P2})", numOnLand, numOnLand / (float)numAlive);
+            Console.WriteLine("- Derps in water: {0} ({1:P2})", numInWater, numInWater / (float)numAlive);
+            Console.WriteLine("-- Average lunge speed: " + derps.Average(d => d.LungeSpeed));
+            Console.WriteLine("-- Average sense distance: " + derps.Average(d => MathF.Sqrt(d.SenseDistSquared)));
+            Console.WriteLine("-- Average size: " + derps.Average(d => d.Scale.X));
+        }
         private void RunSimulation(GL gl, float delta)
         {
             FoodRenderer.Instance.NewFrame(delta);
@@ -213,20 +238,10 @@ namespace DerpySimulation.World
                 }
             }
 
+            LogPopulation();
+
             // Update camera
             _camera.Update(delta);
-            if (LivingEntity.NumAliveDerps != _logLastNumDerps)
-            {
-                _logLastNumDerps = LivingEntity.NumAliveDerps;
-                Console.WriteLine("Derps alive: " + LivingEntity.NumAliveDerps);
-                if (LivingEntity.NumAliveDerps != 0)
-                {
-                    IEnumerable<LivingEntity> derps = _entities.OfType<LivingEntity>();
-                    Console.WriteLine("Average lunge speed: " + derps.Average(d => d.LungeSpeed));
-                    Console.WriteLine("Average sense distance: " + MathF.Sqrt(derps.Average(d => d.SenseDistSquared)));
-                    Console.WriteLine("Average size: " + derps.Average(d => d.Scale.X));
-                }
-            }
 
 #if DEBUG_TEST_SUN
             // Sun
