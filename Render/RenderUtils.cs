@@ -1,6 +1,7 @@
 ﻿using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -8,6 +9,13 @@ namespace DerpySimulation.Render
 {
     internal static class RenderUtils
     {
+        public static Matrix4x4 CreateTransform(in Vector3 scale, in Quaternion rotation, in Vector3 position)
+        {
+            return Matrix4x4.CreateScale(scale)
+                * Matrix4x4.CreateFromQuaternion(rotation)
+                * Matrix4x4.CreateTranslation(position);
+        }
+
         #region Textures
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -1,25 +1,58 @@
 ﻿using DerpySimulation.Core;
+using DerpySimulation.World;
+using Silk.NET.OpenGL;
 using System.Numerics;
 
 namespace DerpySimulation.Entities
 {
     internal abstract class Entity
     {
-        /// <summary>The transform matrix after being updated this frame.</summary>
-        public Matrix4x4 UpdatedTransform;
+        public bool IsDead;
+        public bool IsUnderwater;
 
-        public Vector3 Scale = Vector3.One;
+        public Vector3 Scale;
         public PositionRotation PR;
 
-        protected void UpdateTransform()
+        public Vector3 Velocity;
+        public float Weight;
+
+        public abstract void Update(GL gl, float delta);
+
+        protected bool ClampToBordersAndFloor()
         {
-            UpdateTransform(PR.Rotation.Value, Scale, PR.Position);
+            return Simulation.Instance.ClampToBordersAndFloor(ref PR.Position, Scale.X, Scale.Z, 0f);
         }
-        protected void UpdateTransform(in Quaternion rotation, in Vector3 scale, in Vector3 position)
+
+        protected void ApplyPhysics(float delta)
         {
-            UpdatedTransform = Matrix4x4.CreateScale(scale)
-                * Matrix4x4.CreateFromQuaternion(rotation)
-                * Matrix4x4.CreateTranslation(position);
+            // Update position with current velocity
+            PR.Position += Velocity * delta;
+            IsUnderwater = Simulation.Instance.IsUnderwater(PR.Position.Y);
+
+            // Update acceleration
+            const float GRAVITY = 100f;
+            const float FRICTION = 0.9f;
+            Vector3 acceleration = Velocity * -FRICTION;
+            acceleration.Y -= GRAVITY * Weight;
+
+            // Update velocity
+            const float UNDERWATER_MOD = 0.9f;
+            Velocity += acceleration * delta;
+            if (IsUnderwater)
+            {
+                Velocity *= UNDERWATER_MOD; // Slow down when hitting the water
+            }
+            // Stop moving if velocity is close to 0
+            if (Velocity.LengthSquared() < 0.01f)
+            {
+                Velocity = Vector3.Zero;
+            }
+        }
+
+        public virtual void Die()
+        {
+            IsDead = true;
+            Simulation.Instance.SomethingDied(this);
         }
     }
 }

@@ -4,7 +4,6 @@ using DerpySimulation.Render.Meshes;
 using DerpySimulation.Render.Shaders;
 using Silk.NET.OpenGL;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 
 namespace DerpySimulation.Render.Renderers
@@ -26,7 +25,7 @@ namespace DerpySimulation.Render.Renderers
             _shader = new FoodShader(gl);
             _model = AssimpLoader.ImportModel(gl, MODEL_PATH);
 
-            // Add instancing stuff to each mesh
+            // Add instancing stuff to each mesh vao
             _instanceVBO = gl.GenBuffer();
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceVBO);
             gl.BufferData(BufferTargetARB.ArrayBuffer, VBOData_InstancedFood.SizeOf * FoodEntity.MAX_FOOD, null, BufferUsageARB.StreamDraw); // Create empty vbo
@@ -50,18 +49,22 @@ namespace DerpySimulation.Render.Renderers
             Instance = new FoodRenderer(gl);
         }
 
-        public unsafe void UpdateVisuals(GL gl, float delta, List<FoodEntity> food)
+        public void NewFrame(float delta)
         {
+            _numToRender = 0;
             FoodEntity.UpdateSpin(delta);
-            _numToRender = (uint)food.Count;
-            gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceVBO);
-            for (int i = 0; i < food.Count; i++)
+        }
+        public unsafe void Add(GL gl, in Vector3 color, in Matrix4x4 transform)
+        {
+            int i = (int)_numToRender;
+            if (i >= FoodEntity.MAX_FOOD)
             {
-                FoodEntity f = food[i];
-                f.UpdateVisual(delta);
-                var vboData = new VBOData_InstancedFood(f.Color, f.UpdatedTransform);
-                gl.BufferSubData(BufferTargetARB.ArrayBuffer, i * (int)VBOData_InstancedFood.SizeOf, VBOData_InstancedFood.SizeOf, &vboData);
+                return;
             }
+            _numToRender++;
+            gl.BindBuffer(BufferTargetARB.ArrayBuffer, _instanceVBO);
+            var vboData = new VBOData_InstancedFood(color, transform);
+            gl.BufferSubData(BufferTargetARB.ArrayBuffer, i * (int)VBOData_InstancedFood.SizeOf, VBOData_InstancedFood.SizeOf, &vboData);
         }
         public void Render(GL gl, in Matrix4x4 projectionView, in Vector3 camPos, in Vector4 clippingPlane)
         {

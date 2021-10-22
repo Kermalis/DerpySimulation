@@ -88,6 +88,12 @@ namespace DerpySimulation.Core
             Display.Quit();
         }
 
+        public static void SetCallbacks(MainCallbackDelegate main, QuitCallbackDelegate quit)
+        {
+            Callback = main;
+            QuitCallback = quit;
+        }
+
         private static bool HandleOSEvents()
         {
             while (SDL.SDL_PollEvent(out SDL.SDL_Event e) != 0)

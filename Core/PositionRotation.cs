@@ -18,6 +18,11 @@ namespace DerpySimulation.Core
             Rotation = rot;
         }
 
+        public void LookAt(in Vector3 pos)
+        {
+            Rotation.FaceDirection(Vector3.Normalize(Position - pos));
+        }
+
         public void Slerp(in PositionRotation from, in PositionRotation to, float progress)
         {
             Position = Vector3.Lerp(from.Position, to.Position, progress);

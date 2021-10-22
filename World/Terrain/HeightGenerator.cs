@@ -19,9 +19,9 @@ namespace DerpySimulation.World.Terrain
 
         public HeightGenerator(float amplitude, int numOctaves, float roughness, int? seed)
         {
-            _seed = seed ?? Environment.TickCount;
+            _seed = seed ?? (int)LehmerRand.CreateRandomSeed();
 #if DEBUG
-            Log.WriteLineWithTime("Seed: " + _seed.ToString("X8"));
+            Log.WriteLineWithTime("World generation seed: " + _seed.ToString("X8"));
 #endif
             _amplitude = amplitude;
             _numOctaves = numOctaves;
@@ -75,7 +75,7 @@ namespace DerpySimulation.World.Terrain
             // Create a seed for these coordinates
             uint lehmer = (uint)(((604171 * x) + (4393139 * z) + _seed) ^ 534742);
             // Use as a float between -1 and 1
-            return Utils.LehmerRandomizerFloat(ref lehmer) * 2 - 1;
+            return LehmerRand.NextFloatRange(-1, 1, ref lehmer);
         }
     }
 }

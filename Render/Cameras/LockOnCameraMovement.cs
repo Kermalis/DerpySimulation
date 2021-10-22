@@ -27,7 +27,7 @@ namespace DerpySimulation.Render.Cameras
         private SmoothFloat _angleAroundTarget = new(0, 10);
         private SmoothFloat _distanceFromTarget = new(10, 5);
 
-        public void Update(float delta, Simulation sim, ref PositionRotation pr)
+        public void Update(float delta, ref PositionRotation pr)
         {
             Mouse.LockMouseIfJustClicked();
 
@@ -46,7 +46,7 @@ namespace DerpySimulation.Render.Cameras
             pos.Z = Target.Z + (horizontalDistance * MathF.Cos(horizontalTheta));
 
             // Don't allow the camera to leave the terrain or go into the ground
-            sim.ClampToBordersAndFloor(ref pos, X_SIZE, Y_OFFSET, Z_SIZE);
+            Simulation.Instance.ClampToBordersAndFloor(ref pos, X_SIZE, Z_SIZE, Y_OFFSET);
 
             float finalYaw = (360 - _angleAroundTarget.Current) % 360;
             pr.Rotation.Set(finalYaw, _pitch.Current, 0f);

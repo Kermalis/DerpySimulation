@@ -1,7 +1,6 @@
 ﻿using DerpySimulation.Core;
 using DerpySimulation.Render.Meshes;
 using Silk.NET.OpenGL;
-using System;
 
 namespace DerpySimulation.Render.Shaders
 {
@@ -23,8 +22,8 @@ namespace DerpySimulation.Render.Shaders
         {
             Instance = this;
             // Set a random position in the fractal to start so it's different on each boot
-            uint seed = (uint)Environment.TickCount;
-            _time = Utils.LehmerRandomizerFloat(ref seed) * MAX_TIME * 0.5f;
+            uint seed = LehmerRand.CreateRandomSeed();
+            _time = LehmerRand.NextFloat(ref seed) * MAX_TIME * 0.5f;
 
             _lScreenSize = GetUniformLocation(gl, "screenSize", false);
             _lDisplayTime = GetUniformLocation(gl, "displayTime");

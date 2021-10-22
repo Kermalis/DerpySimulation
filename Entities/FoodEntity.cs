@@ -1,11 +1,14 @@
 ﻿using DerpySimulation.Core;
+using DerpySimulation.Render;
+using DerpySimulation.Render.Renderers;
+using Silk.NET.OpenGL;
 using System.Numerics;
 
 namespace DerpySimulation.Entities
 {
     internal sealed class FoodEntity : Entity
     {
-        public const uint MAX_FOOD = 1_000;
+        public const uint MAX_FOOD = 2_000;
 
         // Degrees per second rotation
         private const float ROTATION_SPEEDX = 225f;
@@ -16,15 +19,32 @@ namespace DerpySimulation.Entities
 
         // The spins can be global to save CPU for a lot of food
         private static Rotation _globalRotation;
+        public static int NumAliveFood; // Used for food thrower
 
         private float _bounceProgress;
 
         public readonly Vector3 Color;
 
-        public FoodEntity(in Vector3 pos, in Vector3 color)
+        public FoodEntity(in Vector3 pos, LehmerRand rand)
         {
-            PR.Position = pos;
-            Color = color;
+            NumAliveFood++;
+
+            PR = new PositionRotation(pos, Rotation.Default);
+            Scale = Vector3.One;
+            Weight = 0.55f;
+
+            Color = rand.NextVector3Range(0.35f, 1f);
+        }
+
+        public static bool CanSpawnFood()
+        {
+            return NumAliveFood < MAX_FOOD;
+        }
+
+        public override void Die()
+        {
+            NumAliveFood--;
+            base.Die();
         }
 
         public static void UpdateSpin(float delta)
@@ -41,11 +61,20 @@ namespace DerpySimulation.Entities
             _bounceProgress %= 1; // Clamp to 0-1
             return (Easing.BellCurve2(_bounceProgress) * BOUNCE_HEIGHT) + BASE_VISUAL_Y;
         }
-        public void UpdateVisual(float delta)
+        public override void Update(GL gl, float delta)
         {
-            Vector3 pos = PR.Position;
-            pos.Y += UpdateBounce(delta);
-            UpdateTransform(_globalRotation.Value, Scale, pos);
+            ApplyPhysics(delta);
+            if (ClampToBordersAndFloor())
+            {
+                Velocity = Vector3.Zero;
+            }
+
+            Vector3 visualPos = PR.Position;
+            if (Velocity == Vector3.Zero)
+            {
+                visualPos.Y += UpdateBounce(delta);
+            }
+            FoodRenderer.Instance.Add(gl, Color, RenderUtils.CreateTransform(Scale, _globalRotation.Value, visualPos));
         }
     }
 }

@@ -28,8 +28,7 @@ namespace DerpySimulation.Render.Renderers
             {
                 throw new NullReferenceException("No GUI is set to render");
             }
-            ProgramMain.Callback = CB_UpdateAndRenderTopComponent;
-            ProgramMain.QuitCallback = QCB_DeleteTopComponent;
+            ProgramMain.SetCallbacks(CB_UpdateAndRenderTopComponent, QCB_DeleteTopComponent);
         }
         private void CB_UpdateAndRenderTopComponent(GL gl, float delta)
         {

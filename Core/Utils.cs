@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace DerpySimulation.Core
@@ -29,37 +30,75 @@ namespace DerpySimulation.Core
             var normal = Vector3.Cross(tangentA, tangentB);
             return Vector3.Normalize(normal);
         }
-
-        public static void LehmerRandomizer(ref uint state)
         {
-            state += 0xE120FC15;
-            ulong tmp = (ulong)state * 0x4A39B70D;
-            state = (uint)((tmp >> 32) ^ tmp);
-            tmp = (ulong)state * 0x12FAD5C9;
-            state = (uint)((tmp >> 32) ^ tmp);
         }
-        /// <summary>Gets a random value between 0 (inclusive) and 1 (inclusive) using <see cref="LehmerRandomizer"/>.</summary>
-        public static float LehmerRandomizerFloat(ref uint state)
+        /// <summary><paramref name="forward"/> is calculated as (from - to) and must be normalized. Breaks if <paramref name="forward"/> is parallel to <paramref name="up"/>.</summary>
+        public static Quaternion CreateLookRotation(in Vector3 forward, in Vector3 up)
         {
-            LehmerRandomizer(ref state);
-            return (float)state / uint.MaxValue;
-        }
-        /// <summary>Gets a random value between 0 (inclusive) and 1 (exclusive) using <see cref="LehmerRandomizer"/>.</summary>
-        public static float LehmerRandomizerFloatNo1(ref uint state)
-        {
-            do
+            // https://stackoverflow.com/a/52551983
+            // First check for up and -up, because the cross product would be 0
+            if (forward == up)
             {
-                LehmerRandomizer(ref state);
-            } while (state == uint.MaxValue);
-            return (float)state / uint.MaxValue;
+                return Rotation.CreateQuaternion(up.X * 90, up.Y * 90, up.Z * 90); // These values due to OpenGL's coordinate system
+            }
+            if (forward == -up)
+            {
+                return Rotation.CreateQuaternion(up.X * -90, up.Y * -90, up.Z * -90);
+            }
+            var rSide = Vector3.Normalize(Vector3.Cross(up, forward)); // Rotated side (normalized again because forward and up are not perpendicular)
+            var rUp = Vector3.Cross(forward, rSide); // Rotated up
+
+            Quaternion q;
+            float s;
+            float trace = rSide.X + rUp.Y + forward.Z;
+            if (trace > 0)
+            {
+                s = 0.5f / MathF.Sqrt(trace + 1);
+                q.X = (rUp.Z - forward.Y) * s;
+                q.Y = (forward.X - rSide.Z) * s;
+                q.Z = (rSide.Y - rUp.X) * s;
+                q.W = 0.25f / s;
+                return q;
+            }
+            if (rSide.X > rUp.Y && rSide.X > forward.Z)
+            {
+                s = 2 * MathF.Sqrt(1 + rSide.X - rUp.Y - forward.Z);
+                q.X = 0.25f * s;
+                q.Y = (rUp.X + rSide.Y) / s;
+                q.Z = (forward.X + rSide.Z) / s;
+                q.W = (rUp.Z - forward.Y) / s;
+                return q;
+            }
+            if (rUp.Y > forward.Z)
+            {
+                s = 2 * MathF.Sqrt(1 + rUp.Y - rSide.X - forward.Z);
+                q.X = (rUp.X + rSide.Y) / s;
+                q.Y = 0.25f * s;
+                q.Z = (forward.Y + rUp.Z) / s;
+                q.W = (forward.X - rSide.Z) / s;
+                return q;
+            }
+            s = 2 * MathF.Sqrt(1 + forward.Z - rSide.X - rUp.Y);
+            q.X = (forward.X + rSide.Z) / s;
+            q.Y = (forward.Y + rUp.Z) / s;
+            q.Z = 0.25f * s;
+            q.W = (rSide.Y - rUp.X) / s;
+            return q;
         }
-        public static Vector3 RandomVector3(ref uint state)
+        public static Vector3 Average<TSource>(this IEnumerable<TSource> source, Func<TSource, Vector3> selector)
         {
-            return new Vector3(
-                LehmerRandomizerFloat(ref state),
-                LehmerRandomizerFloat(ref state),
-                LehmerRandomizerFloat(ref state)
-                );
+            Vector3 sum = Vector3.Zero;
+            long count = 0;
+            foreach (TSource s in source)
+            {
+                sum += selector(s);
+                count++;
+            }
+            if (count > 0)
+            {
+                return sum / count;
+            }
+            throw new InvalidOperationException("source had no elements.");
         }
 
         public static float CosineInterpolation(float a, float b, float progress)

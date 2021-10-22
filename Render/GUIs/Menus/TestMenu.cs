@@ -47,9 +47,7 @@ namespace DerpySimulation.Render.GUIs.Menus
         private static void OnBeginClicked(GUIButton button, bool clicked)
         {
             GL gl = Display.OpenGL;
-            var sim = new Simulation(gl, SimulationCreationSettings.CreatePreset(0));
-            ProgramMain.Callback = sim.CB_RunSimulation;
-            ProgramMain.QuitCallback = sim.Delete;
+            Simulation.Debug_CreateSimulation(gl);
         }
         private static void OnQuitClicked(GUIButton button, bool clicked)
         {

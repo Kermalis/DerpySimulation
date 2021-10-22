@@ -12,17 +12,25 @@ namespace DerpySimulation.Render.Cameras
         private const float FLY_SPEED_MIN = 5f;
         private const float FLY_SPEED_MAX = 250f;
 
-        private const float PITCH_MIN = -45f;
+        private const float PITCH_MIN = -75f;
         private const float PITCH_MAX = 90f;
         private const float X_SIZE = 0.1f;
         private const float Y_OFFSET = 5f; // Offset above the ground
         private const float Z_SIZE = 0.1f;
 
-        private SmoothFloat _pitch = new(10, 25f);
-        private SmoothFloat _yaw = new(0, 25f);
+        private SmoothFloat _pitch = new(10f, 25f);
+        private SmoothFloat _yaw = new(0f, 25f);
         private float _flySpeed = 35f;
 
-        public void Update(float delta, Simulation sim, ref PositionRotation pr)
+        public void Continue(in Rotation rot)
+        {
+            _pitch.Current = rot.Pitch;
+            _pitch.Target = _pitch.Current;
+            _yaw.Current = -rot.Yaw;
+            _yaw.Target = _yaw.Current;
+        }
+
+        public void Update(float delta, ref PositionRotation pr)
         {
             UpdatePitch(delta);
             UpdateYaw(delta);
@@ -30,7 +38,7 @@ namespace DerpySimulation.Render.Cameras
             UpdatePos(delta, ref pr);
 
             // Don't allow the camera to leave the terrain or go into the ground
-            sim.ClampToBordersAndFloor(ref pr.Position, X_SIZE, Y_OFFSET, Z_SIZE);
+            Simulation.Instance.ClampToBordersAndFloor(ref pr.Position, X_SIZE, Z_SIZE, Y_OFFSET);
 
             float finalYaw = (360 - _yaw.Current) % 360;
             pr.Rotation.Set(finalYaw, _pitch.Current, 0f);

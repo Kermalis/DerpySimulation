@@ -126,6 +126,7 @@ namespace DerpySimulation.Render.Renderers
         {
             _terrainRenderer.Render(gl, terrain, projectionView, clippingPlane);
             FoodRenderer.Instance.Render(gl, projectionView, camPos, clippingPlane);
+            BoxRenderer.Instance.Render(gl, projectionView, camPos, clippingPlane);
         }
 
         public void Delete(GL gl)

@@ -1,5 +1,4 @@
 ﻿using DerpySimulation.Core;
-using DerpySimulation.World;
 using System.Numerics;
 
 namespace DerpySimulation.Render.Cameras
@@ -52,9 +51,9 @@ namespace DerpySimulation.Render.Cameras
         }
 
         /// <summary>Updates see <see cref="PR"/></summary>
-        public void Update(float delta, Simulation sim)
+        public void Update(float delta)
         {
-            Movement.Update(delta, sim, ref PR);
+            Movement.Update(delta, ref PR);
         }
     }
 }
