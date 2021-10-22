@@ -70,7 +70,7 @@ namespace DerpySimulation.Entities
             }
 
             Vector3 visualPos = PR.Position;
-            if (Velocity == Vector3.Zero)
+            if (Velocity.Y == 0f) // Don't bounce if falling or rising
             {
                 visualPos.Y += UpdateBounce(delta);
             }
