@@ -30,8 +30,6 @@ namespace DerpySimulation.Core
             var normal = Vector3.Cross(tangentA, tangentB);
             return Vector3.Normalize(normal);
         }
-        {
-        }
         /// <summary><paramref name="forward"/> is calculated as (from - to) and must be normalized. Breaks if <paramref name="forward"/> is parallel to <paramref name="up"/>.</summary>
         public static Quaternion CreateLookRotation(in Vector3 forward, in Vector3 up)
         {
