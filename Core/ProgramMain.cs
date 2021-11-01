@@ -66,6 +66,13 @@ namespace DerpySimulation.Core
                 else
                 {
                     deltaTime = (float)(now - prev).TotalSeconds;
+                    if (deltaTime > 1f)
+                    {
+                        deltaTime = 1f;
+#if DEBUG
+                        Log.WriteLineWithTime("Time between frames was longer than 1 second!");
+#endif
+                    }
                 }
 
                 // Run frame
