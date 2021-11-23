@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading;
 
 namespace DerpySimulation.World.Terrain
 {
-    internal static class ColorGenerator
+    internal static class TerrainColorGenerator
     {
         /// <summary>Calculates the color for every vertex of the terrain by linearly interpolating between the colors depending on the vertex's height.</summary>
-        public static Vector3[,] GenerateColors(ColorStep[] colors, float[,] gridHeights)
+        public static Vector3[,] Generate(CancellationTokenSource cts, ColorStep[] colors, float[,] gridHeights)
         {
             var gridColors = new Vector3[gridHeights.GetLength(0), gridHeights.GetLength(1)];
             for (int z = 0; z < gridHeights.GetLength(1); z++)
             {
                 for (int x = 0; x < gridHeights.GetLength(0); x++)
                 {
+                    cts.Token.ThrowIfCancellationRequested();
                     gridColors[x, z] = CalcColor(colors, gridHeights[x, z]);
                 }
             }

@@ -16,7 +16,10 @@ namespace DerpySimulation.Entities
         public Vector3 Velocity;
         public float Weight;
 
-        public abstract void Update(GL gl, float delta);
+        public abstract void Update(float delta);
+        public abstract void UpdateVisual(GL gl, float delta);
+
+        public abstract Vector3 Debug_GetColor();
 
         protected bool ClampToBordersAndFloor()
         {

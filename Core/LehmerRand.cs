@@ -5,25 +5,32 @@ namespace DerpySimulation.Core
 {
     internal sealed class LehmerRand
     {
-        public uint State;
+        private uint _state;
+        private uint _boolState;
 
         public LehmerRand()
         {
-            State = CreateRandomSeed();
+            _state = CreateRandomSeed();
         }
         public LehmerRand(uint seed)
         {
-            State = seed;
+            _state = seed;
+        }
+
+        public void SetState(uint state)
+        {
+            _state = state;
+            _boolState = 0;
         }
 
         public static uint CreateRandomSeed()
         {
             uint s = (uint)Environment.TickCount;
-            Next(ref s);
+            NextUint(ref s);
             return s;
         }
 
-        public static void Next(ref uint state)
+        public static void NextUint(ref uint state)
         {
             state += 0xE120FC15;
             ulong tmp = (ulong)state * 0x4A39B70D;
@@ -31,22 +38,38 @@ namespace DerpySimulation.Core
             tmp = (ulong)state * 0x12FAD5C9;
             state = (uint)((tmp >> 32) ^ tmp);
         }
-        public uint Next()
+        public uint NextUint()
         {
-            Next(ref State);
-            return State;
+            NextUint(ref _state);
+            return _state;
+        }
+
+        public static bool NextBoolean(ref uint state)
+        {
+            NextUint(ref state);
+            return (state & 1) == 0;
+        }
+        public bool NextBoolean()
+        {
+            _boolState >>= 1;
+            if (_boolState <= 1)
+            {
+                NextUint(ref _state);
+                _boolState = _state;
+            }
+            return (_boolState & 1) == 0;
         }
 
         /// <summary>Gets a random value between 0 (inclusive) and 1 (inclusive).</summary>
         public static float NextFloat(ref uint state)
         {
-            Next(ref state);
+            NextUint(ref state);
             return (float)state / uint.MaxValue;
         }
         /// <summary>Gets a random value between 0 (inclusive) and 1 (inclusive).</summary>
         public float NextFloat()
         {
-            return NextFloat(ref State);
+            return NextFloat(ref _state);
         }
 
         /// <summary>Gets a random value between 0 (inclusive) and 1 (exclusive).</summary>
@@ -54,14 +77,14 @@ namespace DerpySimulation.Core
         {
             do
             {
-                Next(ref state);
+                NextUint(ref state);
             } while (state == uint.MaxValue);
             return (float)state / uint.MaxValue;
         }
         /// <summary>Gets a random value between 0 (inclusive) and 1 (exclusive).</summary>
         public float NextFloatNo1()
         {
-            return NextFloatNo1(ref State);
+            return NextFloatNo1(ref _state);
         }
 
         /// <summary>Gets a random value between <paramref name="min"/> (inclusive) and <paramref name="max"/> (inclusive).</summary>
@@ -72,7 +95,7 @@ namespace DerpySimulation.Core
         /// <summary>Gets a random value between <paramref name="min"/> (inclusive) and <paramref name="max"/> (inclusive).</summary>
         public float NextFloatRange(float min, float max)
         {
-            return NextFloatRange(min, max, ref State);
+            return NextFloatRange(min, max, ref _state);
         }
 
         public static Vector3 NextVector3(ref uint state)
@@ -85,7 +108,7 @@ namespace DerpySimulation.Core
         }
         public Vector3 NextVector3()
         {
-            return NextVector3(ref State);
+            return NextVector3(ref _state);
         }
 
         public static Vector3 NextVector3Range(float min, float max, ref uint state)
@@ -98,7 +121,7 @@ namespace DerpySimulation.Core
         }
         public Vector3 NextVector3Range(float min, float max)
         {
-            return NextVector3Range(min, max, ref State);
+            return NextVector3Range(min, max, ref _state);
         }
     }
 }

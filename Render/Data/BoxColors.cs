@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using DerpySimulation.Core;
+using System.Numerics;
 
 namespace DerpySimulation.Render.Data
 {
@@ -18,6 +19,16 @@ namespace DerpySimulation.Render.Data
         public Vector3 Down;
         public Vector3 South;
         public Vector3 North;
+
+        public BoxColors(in Vector3 baseColor, LehmerRand rand)
+        {
+            East = rand.NextVector3Range(0.75f, 1f) * baseColor;
+            West = rand.NextVector3Range(0.75f, 1f) * baseColor;
+            Up = rand.NextVector3Range(0.75f, 1f) * baseColor;
+            Down = rand.NextVector3Range(0.25f, 0.75f) * baseColor; // Under is darkest
+            South = rand.NextVector3Range(0.5f, 0.9f) * baseColor; // Butt is slightly darker
+            North = rand.NextVector3Range(1.1f, 1.5f) * baseColor; // Face is brightest
+        }
 
         public static BoxColors Lerp(in BoxColors a, in Vector3 b, float progress)
         {

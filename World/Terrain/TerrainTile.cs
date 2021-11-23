@@ -20,7 +20,7 @@ namespace DerpySimulation.World.Terrain
             _heights = heights;
         }
 
-        public float GetHeight(float x, float z)
+        public float GetHeight(float x, float z, float outOfBoundsResult = 0f)
         {
             // x and z are between 0,0(inclusive) and SIZE,SIZE(exclusive)
             int gridX = (int)x;
@@ -29,7 +29,7 @@ namespace DerpySimulation.World.Terrain
             // Check if it's out of bounds
             if (gridX < 0 || gridZ < 0 || gridX >= SizeX || gridZ >= SizeZ)
             {
-                return 0;
+                return outOfBoundsResult;
             }
 
             // Coords between 0,0 and 1,1 of the grid square

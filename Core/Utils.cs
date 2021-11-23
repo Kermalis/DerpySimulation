@@ -98,6 +98,14 @@ namespace DerpySimulation.Core
             }
             throw new InvalidOperationException("source had no elements.");
         }
+        public static Vector3 ClampVector3(in Vector3 value, float min, float max)
+        {
+            Vector3 v;
+            v.X = Math.Clamp(value.X, min, max);
+            v.Y = Math.Clamp(value.Y, min, max);
+            v.Z = Math.Clamp(value.Z, min, max);
+            return v;
+        }
 
         public static float CosineInterpolation(float a, float b, float progress)
         {

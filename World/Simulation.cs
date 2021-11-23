@@ -9,16 +9,17 @@ using DerpySimulation.World.Water;
 using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Linq;
-#if DEBUG
-using DerpySimulation.Debug;
-#endif
+using System.Numerics;
 
 namespace DerpySimulation.World
 {
     internal sealed class Simulation
     {
+        private const float FOOD_SPAWN_Y = 500f;
+        private const float FOOD_SPAWN_SPEED = 100f; // Amount per second
+        private const int SIM_SPEED = 1;
+
         public static Simulation Instance { get; private set; } = null!; // Initialized in constructor
 
         private readonly SimulationRenderer _renderer;
@@ -29,22 +30,21 @@ namespace DerpySimulation.World
         private readonly LockOnCameraMovement _lockOnMovement;
 
         private readonly TerrainTile _terrain;
-        private readonly WaterTile _water;
+        public readonly WaterTile Water; // public for now (to get Y)
 
         private readonly List<Entity> _entities;
         private Entity[] _updateEntities;
         private readonly LehmerRand _rand;
 
         private float _foodTime;
-        private const float FoodSpawnSpeed = 75f; // Amount per second
         private int _logLastNumDerps = 0;
 
 #if DEBUG_TEST_SUN
-        private int _tempTime;
-        private const float TempTimeLimit = 6000f;
+        private float _tempTime;
+        private const float TempDayLength = 60f; // Seconds per day
 #endif
 
-        public Simulation(GL gl, in SimulationCreationSettings settings)
+        public Simulation(GL gl, SimulationCreator creator)
         {
             Instance = this;
 
@@ -54,55 +54,42 @@ namespace DerpySimulation.World
             BoxRenderer.Init(gl);
             LightController.Init();
 
-            // Create terrain
-            _terrain = TerrainGenerator.GenerateTerrain(gl, settings, out Vector3 peak);
+            _terrain = creator.Terrain;
+            Water = creator.Water;
 
-            // Create water
-#if DEBUG
-            Log.WriteLineWithTime("Generating water...");
-#endif
-            _water = WaterGenerator.Generate(gl, settings, _terrain);
-#if DEBUG
-            Log.WriteLineWithTime("Done generating! The peak is at " + peak);
-#endif
+            // Test add some lights
+            LightController.Instance.Add(new PointLight(Vector3.Zero, Vector3.Zero, new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new PointLight(Vector3.Zero, Vector3.Zero, new Vector3(1f, 0.01f, 0.002f)));
+            LightController.Instance.Add(new PointLight(Vector3.Zero, Vector3.Zero, new Vector3(1f, 0.01f, 0.002f)));
+
+            _rand = creator.Rand;
+            _entities = creator.InitialEntities;
+            _updateEntities = new Entity[_entities.Capacity];
+            // Start callbacks on our living entities
+            for (int i = 0; i < _entities.Count; i++)
+            {
+                Entity e = _entities[i];
+                if (e is LivingEntity le)
+                {
+                    le.DecideCallbacks();
+                }
+            }
 
             // Create camera
-            peak.Y += 5;
+            Vector3 camPos = creator.TerrainPeak;
+            camPos.Y += 5;
             _freeRoamMovement = new FreeRoamCameraMovement();
             _lockOnMovement = new LockOnCameraMovement();
             _camera = new Camera(_freeRoamMovement);
-            _camera.PR.Position = peak;
+            _camera.PR.Position = camPos;
             Mouse.LockMouseInWindow(true);
 
-            // Test add some lights
-            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ - (settings.SizeZ / 4)), new Vector3(20f, 0f, 0f), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(settings.SizeX - (settings.SizeX / 4), 90f, settings.SizeZ / 4), new Vector3(0f, 10f, 10f), new Vector3(1f, 0.01f, 0.002f)));
-            LightController.Instance.Add(new(new Vector3(0f, 150f, 0f), new Vector3(0f, 0f, 15f), new Vector3(1f, 0.01f, 0.002f)));
-
-            const int numTestDerps = 1000;
-
-            _rand = new LehmerRand();
-            _entities = new List<Entity>((int)FoodEntity.MAX_FOOD + numTestDerps);
-            _updateEntities = new Entity[_entities.Capacity];
-
-            // Test add derps
-            for (int i = 0; i < numTestDerps; i++)
-            {
-                RandomPos(out float x, out float z);
-                float y = GetHeight(x, z);
-                _entities.Add(new LivingEntity(new Vector3(x, y, z), _rand));
-            }
+            ProgramMain.SetCallbacks(CB_FreeRoam, Delete);
         }
 
-        public static void Debug_CreateSimulation(GL gl)
+        public float GetHeight(float x, float z, float outOfBoundsResult = 0f)
         {
-            var sim = new Simulation(gl, SimulationCreationSettings.CreatePreset(2));
-            ProgramMain.SetCallbacks(sim.CB_FreeRoam, sim.Delete);
-        }
-
-        public float GetHeight(float x, float z)
-        {
-            return _terrain.GetHeight(x, z);
+            return _terrain.GetHeight(x, z, outOfBoundsResult: outOfBoundsResult);
         }
         public void ClampToBorders(ref float x, ref float z, float sizeX, float sizeZ)
         {
@@ -142,12 +129,16 @@ namespace DerpySimulation.World
         }
         public bool IsUnderwater(float y)
         {
-            return y <= _water.Y;
+            return y <= Water.Y;
         }
         public void RandomPos(out float x, out float z)
         {
-            x = _rand.NextFloatNo1() * _terrain.SizeX;
-            z = _rand.NextFloatNo1() * _terrain.SizeZ;
+            RandomPos(_rand, _terrain, out x, out z);
+        }
+        public static void RandomPos(LehmerRand rand, TerrainTile terrain, out float x, out float z)
+        {
+            x = rand.NextFloatNo1() * terrain.SizeX;
+            z = rand.NextFloatNo1() * terrain.SizeZ;
         }
 
         // Finds closest food instead of first food detected
@@ -170,6 +161,10 @@ namespace DerpySimulation.World
             }
             return bestE;
         }
+        public void AddEntity(Entity e)
+        {
+            _entities.Add(e);
+        }
         public void SomethingDied(Entity e)
         {
             _entities.Remove(e);
@@ -177,19 +172,76 @@ namespace DerpySimulation.World
 
         private void SpawnFood(float delta)
         {
-            _foodTime = (FoodSpawnSpeed * delta) + _foodTime;
+            _foodTime += FOOD_SPAWN_SPEED * delta;
             while (_foodTime >= 1f)
             {
                 _foodTime--;
                 if (FoodEntity.CanSpawnFood())
                 {
                     RandomPos(out float x, out float z);
-                    float y = 500f; // GetHeight(x, z);
-                    // Giving a random velocity doesn't change much
-                    _entities.Add(new FoodEntity(new Vector3(x, y, z), _rand));
+                    // Giving a random velocity doesn't change much due to friction
+                    _entities.Add(new FoodEntity(new Vector3(x, FOOD_SPAWN_Y, z), _rand));
                 }
             }
         }
+        private void UpdateEntities(GL gl, float delta, bool doVisual)
+        {
+            // Check for array resize
+            int cap = _entities.Capacity;
+            if (_updateEntities.Length < cap)
+            {
+                Array.Resize(ref _updateEntities, cap);
+            }
+            _entities.CopyTo(_updateEntities);
+
+            int numEntities = _entities.Count; // Don't keep updating count because of entity changes
+            for (int i = 0; i < numEntities; i++)
+            {
+                Entity e = _updateEntities[i];
+                if (!e.IsDead)
+                {
+                    e.Update(delta);
+                    if (doVisual)
+                    {
+                        e.UpdateVisual(gl, delta);
+                    }
+                }
+            }
+        }
+#if DEBUG_TEST_SUN
+        private void UpdateTimeOfDay(float delta)
+        {
+            _tempTime += delta;
+            if (_tempTime >= TempDayLength)
+            {
+                _tempTime -= TempDayLength;
+            }
+            float t = _tempTime / TempDayLength * 360; // Map daytime to 0-360
+            ref Vector3 sunPos = ref LightController.Instance.Sun.Pos;
+            // Temp move the sun west
+            // Pretending the sun is rising from the east (negative x)
+            sunPos.X = MathF.Sin((t + 270) * Utils.DegToRad) * 20000; // 0 -> -20000, 0.25 -> 0, 0.5 -> 20000, 0.75 -> 0
+            sunPos.Y = MathF.Sin(t * Utils.DegToRad) * 20000; // 0 -> 0, 0.25 -> 20000, 0.5 -> 0, 0.75 -> -20000
+        }
+#endif
+#if DEBUG
+        private void Debug_LightsOnEntities()
+        {
+            LightController lights = LightController.Instance;
+            for (int i = 0; i < LightController.MAX_LIGHTS - 1; i++)
+            {
+                if (i >= _entities.Count)
+                {
+                    break;
+                }
+                PointLight lit = lights[i + 1];
+                Entity e = _entities[i];
+                lit.Pos = e.PR.Position;
+                lit.Pos.Y += e.Scale.Y * 0.5f;
+                lit.Color = e.Debug_GetColor() * 2f;
+            }
+        }
+#endif
         private void LogPopulation()
         {
             int numAlive = LivingEntity.NumAliveDerps;
@@ -212,7 +264,7 @@ namespace DerpySimulation.World
             Console.WriteLine("- Derps on land: {0} ({1:P2})", numOnLand, numOnLand / (float)numAlive);
             Console.WriteLine("- Derps in water: {0} ({1:P2})", numInWater, numInWater / (float)numAlive);
             Console.WriteLine("-- Average lunge speed: " + derps.Average(d => d.LungeSpeed));
-            Console.WriteLine("-- Average sense distance: " + derps.Average(d => MathF.Sqrt(d.SenseDistSquared)));
+            Console.WriteLine("-- Average sense distance: " + derps.Average(d => d.SenseDist));
             Console.WriteLine("-- Average size: " + derps.Average(d => d.Scale.X));
         }
         private void RunSimulation(GL gl, float delta)
@@ -220,43 +272,22 @@ namespace DerpySimulation.World
             FoodRenderer.Instance.NewFrame(delta);
             BoxRenderer.Instance.NewFrame();
 
-            SpawnFood(delta);
+            for (int i = 0; i < SIM_SPEED; i++)
+            {
+#if DEBUG_TEST_SUN
+                UpdateTimeOfDay(delta);
+#endif
+                SpawnFood(delta);
+                UpdateEntities(gl, delta, i == SIM_SPEED - 1);
+            }
 
-            // Update entities unless they're dead
-            int numEntities = _entities.Count;
-            if (_updateEntities.Length < numEntities)
-            {
-                Array.Resize(ref _updateEntities, numEntities);
-            }
-            _entities.CopyTo(_updateEntities);
-            for (int i = 0; i < numEntities; i++)
-            {
-                Entity e = _updateEntities[i];
-                if (!e.IsDead)
-                {
-                    e.Update(gl, delta);
-                }
-            }
+#if DEBUG
+            Debug_LightsOnEntities(); // Temp put non-sun lights on oldest entities
+#endif
 
             LogPopulation();
 
-            // Update camera
             _camera.Update(delta);
-
-#if DEBUG_TEST_SUN
-            // Sun
-            _tempTime++;
-            if (_tempTime >= TempTimeLimit)
-            {
-                _tempTime = 0;
-            }
-            float timeF = _tempTime / TempTimeLimit * 360;
-            PointLight sun = LightController.Instance.Sun;
-            // Temp move the sun west
-            // Pretending the sun is rising from the east (negative x)
-            sun.Pos.X = MathF.Sin((timeF + 270) * Utils.DegToRad) * 20000; // 0 -> -20000, 0.25 -> 0, 0.5 -> 20000, 0.75 -> 0
-            sun.Pos.Y = MathF.Sin(timeF * Utils.DegToRad) * 20000; // 0 -> 0, 0.25 -> 20000, 0.5 -> 0, 0.75 -> -20000
-#endif
         }
 
         private bool CheckForPause(GL gl, ProgramMain.MainCallbackDelegate unpause)
@@ -355,14 +386,14 @@ namespace DerpySimulation.World
 
         public void Render(GL gl)
         {
-            _renderer.Render(gl, _camera, _terrain, _water);
+            _renderer.Render(gl, _camera, _terrain, Water);
         }
 
         public void Delete(GL gl)
         {
             Instance = null!;
             _terrain.Delete(gl);
-            _water.Delete(gl);
+            Water.Delete(gl);
             _renderer.Delete(gl);
             FoodRenderer.Instance.Delete(gl);
             BoxRenderer.Instance.Delete(gl);

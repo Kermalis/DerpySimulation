@@ -46,8 +46,7 @@ namespace DerpySimulation.Render.GUIs.Menus
         }
         private static void OnBeginClicked(GUIButton button, bool clicked)
         {
-            GL gl = Display.OpenGL;
-            Simulation.Debug_CreateSimulation(gl);
+            _ = new SimulationCreator(SimulationCreationSettings.CreatePreset(2));
         }
         private static void OnQuitClicked(GUIButton button, bool clicked)
         {
@@ -65,7 +64,7 @@ namespace DerpySimulation.Render.GUIs.Menus
 
         public void Render(GL gl, float delta)
         {
-            StarNestShader.Instance.Render(gl, delta); // It will set the program itself
+            StarNestShader.Instance.Render(gl, delta);
         }
 
         protected override IEnumerable<IGUIVisual> GetVisuals()

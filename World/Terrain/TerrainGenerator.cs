@@ -1,99 +1,111 @@
-﻿using DerpySimulation.Render.Data;
+﻿using DerpySimulation.Core;
+using DerpySimulation.Render.Data;
 using DerpySimulation.Render.Meshes;
 using Silk.NET.OpenGL;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Threading;
 #if DEBUG
 using DerpySimulation.Debug;
 #endif
 
 namespace DerpySimulation.World.Terrain
 {
-    internal static class TerrainGenerator
+    internal sealed class TerrainGenerator
     {
-        public static TerrainTile GenerateTerrain(GL gl, in SimulationCreationSettings settings, out Vector3 peak)
+        private readonly SimulationCreationSettings _settings;
+        private readonly Thread _thread;
+        private readonly CancellationTokenSource _cts;
+
+        private bool _done;
+        public Vector3 Peak;
+        private float[,] _gridHeights = null!;
+        private Vector3[,] _gridColors = null!;
+        private VBOData_PosNormalColor[] _vertices = null!;
+        private uint _numVertices;
+        private uint[] _indices = null!;
+
+        public TerrainGenerator(in SimulationCreationSettings settings)
         {
-#if DEBUG
-            Log.WriteLineWithTime("Generating heights...");
-#endif
-            // Generate heights
-
-            peak = new Vector3(0, float.NegativeInfinity, 0);
-            var heightGen = new HeightGenerator(settings.HeightGenAmplitude, settings.HeightGenNumOctaves, settings.HeightGenRoughness, settings.HeightGenSeed);
-            // size + 1 because we are also calculating the point right outside of the terrain so it can still interpolate there
-            float[,] gridHeights = new float[settings.SizeX + 1, settings.SizeZ + 1];
-            for (int z = 0; z < settings.SizeZ + 1; z++)
+            _settings = settings;
+            _thread = new Thread(Generate)
             {
-                for (int x = 0; x < settings.SizeX + 1; x++)
-                {
-                    float y = heightGen.GenerateHeight(x, z);
-                    if (y > peak.Y)
-                    {
-                        peak = new Vector3(x, y, z);
-                    }
-                    gridHeights[x, z] = y;
-                }
+                IsBackground = true,
+                Name = "Terrain Generator"
+            };
+            _thread.Start();
+            _cts = new CancellationTokenSource();
+        }
+
+        private void Generate()
+        {
+            try
+            {
+                GenerateHeights();
+                _cts.Token.ThrowIfCancellationRequested();
+                GenerateColors();
+                _cts.Token.ThrowIfCancellationRequested();
+                GenerateMesh();
+#if DEBUG
+                Log.WriteLineWithTime("Done generating! The peak is at " + Peak);
+#endif
+                _done = true;
             }
-
-            // Generate colors
+            catch (OperationCanceledException)
+            {
 #if DEBUG
-            Log.WriteLineWithTime("Generating colors...");
+                Log.SetIndent(0);
+                Log.WriteLineWithTime("Terrain generation cancelled!");
 #endif
-            Vector3[,] gridColors = ColorGenerator.GenerateColors(settings.ColorSteps, gridHeights);
-
-            // Create terrain
+            }
+            _cts.Dispose();
+        }
+        private void GenerateHeights()
+        {
+            int seed = _settings.HeightGenSeed ?? (int)LehmerRand.CreateRandomSeed();
 #if DEBUG
-            Log.WriteLineWithTime("Generating terrain...");
+            Log.WriteLineWithTime("Generating terrain heights...");
             Log.ModifyIndent(+1);
-#endif
-            uint numVertices = CalcVertexCount(settings.SizeX, settings.SizeZ);
-#if DEBUG
-            Log.WriteLineWithTime("Generating mesh data...");
-#endif
-            VBOData_PosNormalColor[] terrainData = CreateMeshData(gridHeights, gridColors, numVertices);
-#if DEBUG
-            Log.WriteLineWithTime("Generating indices...");
-#endif
-            uint[] indices = TerrainIndexGenerator.GenerateIndexBuffer(settings.SizeX, settings.SizeZ);
-#if DEBUG
+            Log.WriteLineWithTime("World generation seed: " + seed.ToString("X8"));
             Log.ModifyIndent(-1);
 #endif
-            return new TerrainTile(CreateMesh(gl, terrainData, indices), gridHeights);
+            _gridHeights = TerrainHeightGenerator.GenerateArea(_cts,
+                _settings.SizeX, _settings.SizeZ, seed, _settings.HeightGenAmplitude, _settings.HeightGenNumOctaves, _settings.HeightGenRoughness,
+                out Peak);
+        }
+        private void GenerateColors()
+        {
+#if DEBUG
+            Log.WriteLineWithTime("Generating terrain colors...");
+#endif
+            _gridColors = TerrainColorGenerator.Generate(_cts, _settings.ColorSteps, _gridHeights);
+        }
+        private void GenerateMesh()
+        {
+#if DEBUG
+            Log.WriteLineWithTime("Generating terrain mesh...");
+#endif
+            _vertices = TerrainMeshGenerator.Generate(_cts, _settings.SizeX, _settings.SizeZ, _gridHeights, _gridColors, out _numVertices);
+            _gridColors = null!; // Don't need anymore. Need heights for terrain tile though
+            _cts.Token.ThrowIfCancellationRequested();
+            _indices = TerrainIndexGenerator.Generate(_cts, _settings.SizeX, _settings.SizeZ);
         }
 
-        private static uint CalcVertexCount(uint sizeX, uint sizeZ)
+        /// <summary>Checks if the mesh creation thread is done each frame.</summary>
+        public bool IsDone(GL gl, [NotNullWhen(true)] out TerrainTile? terrain)
         {
-            uint topCount = (sizeX - 1) * sizeZ * 2;
-            uint bottom2Rows = 2 * (sizeZ + 1);
-            return topCount + bottom2Rows;
-        }
-
-        /// <summary>Creates the vbo vertex data for the GPU.</summary>
-        private static VBOData_PosNormalColor[] CreateMeshData(float[,] gridHeights, Vector3[,] gridColors, uint numVertices)
-        {
-            var data = new VBOData_PosNormalColor[numVertices];
-            int dataIdx = 0;
-            var lastRow = new GridDataBuilder[gridHeights.GetLength(0) - 1];
-            for (int z = 0; z < gridHeights.GetLength(1) - 1; z++)
+            if (_done)
             {
-                for (int x = 0; x < gridHeights.GetLength(0) - 1; x++)
-                {
-                    var builder = new GridDataBuilder(x, z, gridHeights, gridColors);
-                    builder.StoreSquareData(data, ref dataIdx);
-                    if (z == gridHeights.GetLength(1) - 2)
-                    {
-                        lastRow[x] = builder;
-                    }
-                }
+                terrain = new TerrainTile(CreateMesh(gl), _gridHeights);
+                return true;
             }
-            for (int i = 0; i < lastRow.Length; i++)
-            {
-                lastRow[i].StoreBottomRowData(data, ref dataIdx);
-            }
-            return data;
+            terrain = null;
+            return false;
         }
-        private static unsafe Mesh CreateMesh(GL gl, VBOData_PosNormalColor[] vertices, uint[] indices)
+        private unsafe Mesh CreateMesh(GL gl)
         {
-            uint elementCount = (uint)indices.Length;
+            uint elementCount = (uint)_indices.Length;
 
             // Create vao
             uint vao = gl.CreateVertexArray();
@@ -102,7 +114,7 @@ namespace DerpySimulation.World.Terrain
             // Create ebo
             uint ebo = gl.GenBuffer();
             gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, ebo);
-            fixed (void* data = indices)
+            fixed (void* data = _indices)
             {
                 gl.BufferData(BufferTargetARB.ElementArrayBuffer, sizeof(uint) * elementCount, data, BufferUsageARB.StaticDraw);
             }
@@ -110,9 +122,9 @@ namespace DerpySimulation.World.Terrain
             // Create vbo
             uint vbo = gl.GenBuffer();
             gl.BindBuffer(BufferTargetARB.ArrayBuffer, vbo);
-            fixed (void* data = vertices)
+            fixed (void* data = _vertices)
             {
-                gl.BufferData(BufferTargetARB.ArrayBuffer, VBOData_PosNormalColor.SizeOf * (uint)vertices.Length, data, BufferUsageARB.StaticDraw);
+                gl.BufferData(BufferTargetARB.ArrayBuffer, VBOData_PosNormalColor.SizeOf * _numVertices, data, BufferUsageARB.StaticDraw);
             }
 
             gl.EnableVertexAttribArray(0);
@@ -123,6 +135,14 @@ namespace DerpySimulation.World.Terrain
             gl.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, VBOData_PosNormalColor.SizeOf, (void*)VBOData_PosNormalColor.OffsetOfColor);
 
             return new Mesh(vao, elementCount, false, ebo, vbo);
+        }
+
+        public void Cancel()
+        {
+            if (!_done)
+            {
+                _cts.Cancel();
+            }
         }
     }
 }

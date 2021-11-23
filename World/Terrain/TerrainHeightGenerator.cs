@@ -1,15 +1,14 @@
 ﻿using DerpySimulation.Core;
 using System;
-#if DEBUG
-using DerpySimulation.Debug;
-#endif
+using System.Numerics;
+using System.Threading;
 
 namespace DerpySimulation.World.Terrain
 {
     // TODO: Optimize - The heights for neighboring values are constantly generated per octave (GetBiasedNoise), making it slow.
 
     /// <summary>A Perlin Noise generator.</summary>
-    internal sealed class HeightGenerator
+    internal sealed class TerrainHeightGenerator
     {
         private readonly int _seed;
 
@@ -17,15 +16,34 @@ namespace DerpySimulation.World.Terrain
         private readonly int _numOctaves; // Too many octaves smooths out the result and takes a lot longer to finish
         private readonly float _roughness; // Higher is more rough
 
-        public HeightGenerator(float amplitude, int numOctaves, float roughness, int? seed)
+        public TerrainHeightGenerator(int seed, float amplitude, int numOctaves, float roughness)
         {
-            _seed = seed ?? (int)LehmerRand.CreateRandomSeed();
-#if DEBUG
-            Log.WriteLineWithTime("World generation seed: " + _seed.ToString("X8"));
-#endif
+            _seed = seed;
             _amplitude = amplitude;
             _numOctaves = numOctaves;
             _roughness = roughness;
+        }
+
+        public static float[,] GenerateArea(CancellationTokenSource cts, uint sizeX, uint sizeZ, int seed, float amplitude, int numOctaves, float roughness, out Vector3 peak)
+        {
+            peak = new Vector3(0, float.NegativeInfinity, 0);
+            var heightGen = new TerrainHeightGenerator(seed, amplitude, numOctaves, roughness);
+            // size + 1 because we are also calculating the point right outside of the terrain so it can still interpolate there
+            float[,] gridHeights = new float[sizeX + 1, sizeZ + 1];
+            for (int z = 0; z < sizeZ + 1; z++)
+            {
+                for (int x = 0; x < sizeX + 1; x++)
+                {
+                    cts.Token.ThrowIfCancellationRequested();
+                    float y = heightGen.GenerateHeight(x, z);
+                    if (y > peak.Y)
+                    {
+                        peak = new Vector3(x, y, z);
+                    }
+                    gridHeights[x, z] = y;
+                }
+            }
+            return gridHeights;
         }
 
         /// <summary>Gets the final height of these coordinates.</summary>

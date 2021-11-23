@@ -21,9 +21,8 @@ namespace DerpySimulation.Entities
         private static Rotation _globalRotation;
         public static int NumAliveFood; // Used for food thrower
 
+        private readonly Vector3 _color;
         private float _bounceProgress;
-
-        public readonly Vector3 Color;
 
         public FoodEntity(in Vector3 pos, LehmerRand rand)
         {
@@ -33,7 +32,7 @@ namespace DerpySimulation.Entities
             Scale = Vector3.One;
             Weight = 0.55f;
 
-            Color = rand.NextVector3Range(0.35f, 1f);
+            _color = rand.NextVector3Range(0.35f, 1f);
         }
 
         public static bool CanSpawnFood()
@@ -61,20 +60,26 @@ namespace DerpySimulation.Entities
             _bounceProgress %= 1; // Clamp to 0-1
             return (Easing.BellCurve2(_bounceProgress) * BOUNCE_HEIGHT) + BASE_VISUAL_Y;
         }
-        public override void Update(GL gl, float delta)
+        public override void Update(float delta)
         {
             ApplyPhysics(delta);
             if (ClampToBordersAndFloor())
             {
                 Velocity = Vector3.Zero;
             }
-
+        }
+        public override void UpdateVisual(GL gl, float delta)
+        {
             Vector3 visualPos = PR.Position;
             if (Velocity.Y == 0f) // Don't bounce if falling or rising
             {
                 visualPos.Y += UpdateBounce(delta);
             }
-            FoodRenderer.Instance.Add(gl, Color, RenderUtils.CreateTransform(Scale, _globalRotation.Value, visualPos));
+            FoodRenderer.Instance.Add(gl, _color, RenderUtils.CreateTransform(Scale, _globalRotation.Value, visualPos));
+        }
+        public override Vector3 Debug_GetColor()
+        {
+            return _color;
         }
     }
 }

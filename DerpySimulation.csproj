@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net5.0</TargetFrameworks>
+		<TargetFrameworks>net6.0</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>DerpySimulation</RootNamespace>
 		<Authors>Kermalis</Authors>
@@ -23,12 +23,12 @@
 
 	<!--Debug defines-->
 	<!--DEBUG_TEST_SUN;DEBUG_WIREFRAME-->
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
 		<DefineConstants>$(DefineConstants)</DefineConstants>
 	</PropertyGroup>
 
 	<!--Release defines-->
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net5.0|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
 		<DefineConstants>$(DefineConstants)</DefineConstants>
 	</PropertyGroup>
 
@@ -37,8 +37,8 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<PackageReference Include="EndianBinaryIO" Version="1.1.2" />
-		<PackageReference Include="Silk.NET.Assimp" Version="2.9.0" />
-		<PackageReference Include="Silk.NET.OpenGL" Version="2.9.0" />
+		<PackageReference Include="Silk.NET.Assimp" Version="2.10.1" />
+		<PackageReference Include="Silk.NET.OpenGL" Version="2.10.1" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
 		<ContentWithTargetPath Include="Dependencies\SDL2.dll">
 			<!--64-bit windows dll for now-->

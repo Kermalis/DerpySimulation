@@ -5,6 +5,7 @@ namespace DerpySimulation.World
 {
     internal struct SimulationCreationSettings
     {
+        public int InitialPopulation;
         public float WaterLevel;
         public uint SizeX;
         public uint SizeZ;
@@ -23,6 +24,7 @@ namespace DerpySimulation.World
                 {
                     SimulationCreationSettings settings;
 
+                    settings.InitialPopulation = 25;
                     settings.WaterLevel = 0f;
                     settings.SizeX = 1000;
                     settings.SizeZ = 1000;
@@ -52,6 +54,7 @@ namespace DerpySimulation.World
                 {
                     SimulationCreationSettings settings;
 
+                    settings.InitialPopulation = 50;
                     settings.WaterLevel = 0f;
                     settings.SizeX = 1000;
                     settings.SizeZ = 1000;
@@ -81,6 +84,7 @@ namespace DerpySimulation.World
                 {
                     SimulationCreationSettings settings;
 
+                    settings.InitialPopulation = 100;
                     settings.WaterLevel = 0f;
                     settings.SizeX = 1500;
                     settings.SizeZ = 1500;
