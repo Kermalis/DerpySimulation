@@ -123,7 +123,7 @@ namespace DerpySimulation.Render.GUIs.Fonts
             shader.SetTranslation(gl, new Vector2(RelPos.X, RelPos.Y));
             shader.SetColors(gl, Colors);
 
-            gl.DrawElements(PrimitiveType.Triangles, _totalVisible * 6, DrawElementsType.UnsignedInt, (void*)0);
+            gl.DrawElements(PrimitiveType.Triangles, _totalVisible * 6, DrawElementsType.UnsignedInt, null);
         }
 
         protected override void Delete(GL gl)

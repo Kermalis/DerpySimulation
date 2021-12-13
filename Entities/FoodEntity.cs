@@ -29,7 +29,7 @@ namespace DerpySimulation.Entities
             NumAliveFood++;
 
             PR = new PositionRotation(pos, Rotation.Default);
-            Scale = Vector3.One;
+            Size = Vector3.One;
             Weight = 0.55f;
 
             _color = rand.NextVector3Range(0.35f, 1f);
@@ -75,7 +75,7 @@ namespace DerpySimulation.Entities
             {
                 visualPos.Y += UpdateBounce(delta);
             }
-            FoodRenderer.Instance.Add(gl, _color, RenderUtils.CreateTransform(Scale, _globalRotation.Value, visualPos));
+            FoodRenderer.Instance.Add(gl, _color, RenderUtils.CreateTransform_ScaleRotPos(Size, _globalRotation.Value, visualPos));
         }
         public override Vector3 Debug_GetColor()
         {

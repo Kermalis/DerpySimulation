@@ -9,7 +9,7 @@ namespace DerpySimulation.Render
 {
     internal static class RenderUtils
     {
-        public static Matrix4x4 CreateTransform(in Vector3 scale, in Quaternion rotation, in Vector3 position)
+        public static Matrix4x4 CreateTransform_ScaleRotPos(in Vector3 scale, in Quaternion rotation, in Vector3 position)
         {
             return Matrix4x4.CreateScale(scale)
                 * Matrix4x4.CreateFromQuaternion(rotation)

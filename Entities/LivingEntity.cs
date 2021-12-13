@@ -56,7 +56,7 @@ namespace DerpySimulation.Entities
             PR = new PositionRotation(pos, Rotation.Default);
 
             float size = rand.NextFloatRange(MIN_SIZE, MAX_SIZE);
-            Scale = new Vector3(size, size, size);
+            Size = new Vector3(size, size, size);
             UpdateWeight();
 
             _baseColor = rand.NextVector3Range(0.25f, 1f);
@@ -84,10 +84,10 @@ namespace DerpySimulation.Entities
             PR = parent.PR;
 
             // Mutate size slightly
-            float size = parent.Scale.X;
+            float size = parent.Size.X;
             size += _rand.NextFloatRange(-0.1f, 0.1f);
             size = Math.Clamp(size, MIN_SIZE, MAX_SIZE);
-            Scale = new Vector3(size, size, size);
+            Size = new Vector3(size, size, size);
             UpdateWeight();
 
             // Mutate color slightly
@@ -126,7 +126,7 @@ namespace DerpySimulation.Entities
 
         private void UpdateWeight()
         {
-            Weight = Scale.Length() * 0.2f;
+            Weight = Size.Length() * 0.2f;
         }
 
         public override void Die()
@@ -160,16 +160,16 @@ namespace DerpySimulation.Entities
         public override void UpdateVisual(GL gl, float delta)
         {
             Vector3 visualPos = PR.Position;
-            visualPos.Y += Scale.Y * 0.5f;
+            visualPos.Y += Size.Y * 0.5f;
             // Shake slightly based on hunger
             const float startShakingPercent = 0.8f;
             float factor = _timeWithoutFood / STARVATION_TIME;
             if (factor >= startShakingPercent)
             {
                 float shakeAmt = factor * 0.065f; // Shake more the closer we are to starvation
-                visualPos += Scale * _rand.NextVector3Range(-shakeAmt, shakeAmt);
+                visualPos += Size * _rand.NextVector3Range(-shakeAmt, shakeAmt);
             }
-            BoxRenderer.Instance.Add(gl, _boxColors, RenderUtils.CreateTransform(Scale, PR.Rotation.Value, visualPos));
+            BoxRenderer.Instance.Add(gl, _boxColors, RenderUtils.CreateTransform_ScaleRotPos(Size, PR.Rotation.Value, visualPos));
         }
         public override Vector3 Debug_GetColor()
         {
@@ -207,7 +207,7 @@ namespace DerpySimulation.Entities
             w = _rand.NextFloatRange(15f, 30f);
             _wanderPos.Z += _rand.NextBoolean() ? w : -w;
 
-            sim.ClampToBorders(ref _wanderPos.X, ref _wanderPos.Z, Scale.X, Scale.Z);
+            sim.ClampToBorders(ref _wanderPos.X, ref _wanderPos.Z, Size.X, Size.Z);
             _wanderPos.Y = sim.GetHeight(_wanderPos.X, _wanderPos.Z);
 
             float waterY = sim.Water.Y;
@@ -218,7 +218,7 @@ namespace DerpySimulation.Entities
             }
             else
             {
-                _wanderPos.Y += Scale.Y * 0.5f; // Don't stare at the floor
+                _wanderPos.Y += Size.Y * 0.5f; // Don't stare at the floor
             }
 
             _callback1 = CB1_Wander;
@@ -231,7 +231,7 @@ namespace DerpySimulation.Entities
         }
         private bool IsWithinReach(float distSqrd)
         {
-            float eatDist = Scale.LengthSquared();
+            float eatDist = Size.LengthSquared();
             return distSqrd < eatDist;
         }
 

@@ -237,7 +237,7 @@ namespace DerpySimulation.World
                 PointLight lit = lights[i + 1];
                 Entity e = _entities[i];
                 lit.Pos = e.PR.Position;
-                lit.Pos.Y += e.Scale.Y * 0.5f;
+                lit.Pos.Y += e.Size.Y * 0.5f;
                 lit.Color = e.Debug_GetColor() * 2f;
             }
         }
@@ -265,7 +265,7 @@ namespace DerpySimulation.World
             Console.WriteLine("- Derps in water: {0} ({1:P2})", numInWater, numInWater / (float)numAlive);
             Console.WriteLine("-- Average lunge speed: " + derps.Average(d => d.LungeSpeed));
             Console.WriteLine("-- Average sense distance: " + derps.Average(d => d.SenseDist));
-            Console.WriteLine("-- Average size: " + derps.Average(d => d.Scale.X));
+            Console.WriteLine("-- Average size: " + derps.Average(d => d.Size.X));
         }
         private void RunSimulation(GL gl, float delta)
         {

@@ -30,9 +30,11 @@ namespace DerpySimulation.Render.Shaders
         }
         private static uint LoadShader(GL gl, ShaderType type, string asset)
         {
-            StreamReader sr = AssetLoader.GetAssetStreamText(asset);
-            string src = sr.ReadToEnd();
-            sr.Dispose();
+            string src;
+            using (StreamReader sr = AssetLoader.GetAssetStreamText(asset))
+            {
+                src = sr.ReadToEnd();
+            }
 
             uint handle = gl.CreateShader(type);
             gl.ShaderSource(handle, src);

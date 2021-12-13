@@ -15,8 +15,8 @@ namespace DerpySimulation.Core
         public delegate void MainCallbackDelegate(GL gl, float delta);
         public delegate void QuitCallbackDelegate(GL gl);
 
-        public static MainCallbackDelegate Callback = null!; // Initialized in Init()
-        public static QuitCallbackDelegate QuitCallback = null!; // Initialized in Init()
+        public static MainCallbackDelegate Callback { get; private set; } = null!; // Initialized in Init()
+        public static QuitCallbackDelegate QuitCallback { get; private set; } = null!; // Initialized in Init()
 
         public static bool QuitRequested;
 

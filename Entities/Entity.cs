@@ -10,7 +10,7 @@ namespace DerpySimulation.Entities
         public bool IsDead;
         public bool IsUnderwater;
 
-        public Vector3 Scale;
+        public Vector3 Size;
         public PositionRotation PR;
 
         public Vector3 Velocity;
@@ -23,7 +23,7 @@ namespace DerpySimulation.Entities
 
         protected bool ClampToBordersAndFloor()
         {
-            return Simulation.Instance.ClampToBordersAndFloor(ref PR.Position, Scale.X, Scale.Z, 0f);
+            return Simulation.Instance.ClampToBordersAndFloor(ref PR.Position, Size.X, Size.Z, 0f);
         }
 
         protected void ApplyPhysics(float delta)
