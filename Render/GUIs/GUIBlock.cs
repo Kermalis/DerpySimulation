@@ -33,7 +33,7 @@ namespace DerpySimulation.Render.GUIs
             gl.Uniform2(shader.LRelSize, pos.W, pos.H);
             Colors.PutInShader(gl, shader.LColor, _color);
 
-            SimpleRectMesh.Instance.Render(gl);
+            SimpleRectMesh.Instance.RenderRel(gl);
         }
     }
 }

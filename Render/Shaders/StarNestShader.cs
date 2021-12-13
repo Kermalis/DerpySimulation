@@ -41,7 +41,7 @@ namespace DerpySimulation.Render.Shaders
             _time = (_time + delta) % MAX_TIME;
             gl.Uniform1(_lDisplayTime, _time);
 
-            SimpleRectMesh.Instance.Render(gl);
+            SimpleRectMesh.Instance.RenderGL(gl);
         }
     }
 }
